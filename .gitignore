@@ -59,3 +59,7 @@ typings/
 
 # next.js build output
 .next
+build.cmd
+
+# Security file
+php/settings.php
