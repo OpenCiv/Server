@@ -65,7 +65,7 @@ $statement->prepare('INSERT INTO `Tokens` (`Value`, `UserId`, `UserAgent`) VALUE
 $statement->bind_param('sis', $token, $userId, $_SERVER['HTTP_USER_AGENT']);
 $statement->execute();
 $statement->close();
-setcookie('token', $token, time() + 31622400, '/');
+setcookie('token', $token, $timestamp + 31622400, '/');
 
 // Report success
 send_result([

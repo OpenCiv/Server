@@ -1,7 +1,14 @@
 <?php
+
 // Settings contain credentials and security variables
 require 'settings.php';
 
+// We only need to request the time once, at the start, and will be the same throughout the script
+$timestamp = time();
+
+/**
+ * A preset mysqli extension
+ */
 class database extends mysqli {
    function __construct() {
       parent::__construct(settings::$dbhost, settings::$dbuser, settings::$dbpass, settings::$dbname);
@@ -16,6 +23,9 @@ class database extends mysqli {
    }
 }
 
+/**
+ * The function returns results to the client
+ */
 function send_result($result, $code = 200) {
    global $db;
 
@@ -33,6 +43,9 @@ function send_result($result, $code = 200) {
    exit;
 }
 
+/**
+ * Returns a string with 64 random characters
+ */
 function generate_token() {
    $alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
    $pass = [];
@@ -45,6 +58,7 @@ function generate_token() {
    return implode($pass);
 }
 
+// Start a session and obtain post parameters
 session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    $params = json_decode(trim(file_get_contents('php://input')));

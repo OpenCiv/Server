@@ -58,7 +58,7 @@ if (!password_verify($params->password, $password)) {
    $statement->bind_param('iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
    $statement->execute();
    $statement->close();
-   setcookie('token', $token, time() + 34560000, '/');
+   setcookie('token', $token, $timestamp + 34560000, '/');
 
    // Set session variables
    $_SESSION['userId'] = $userId;

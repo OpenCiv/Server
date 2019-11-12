@@ -15,7 +15,7 @@ elseif (isset($_COOKIE['token'])) {
    $statement->prepare('SELECT `Timestamp`, `UserId`, `UserAgent` FROM `Tokens` WHERE `Value` = ?');
    $statement->bind_param('s', $_COOKIE['token']);
    $statement->execute();
-   $statement->bind_result($timestamp, $userId, $userAgent);
+   $statement->bind_result($tokenTime, $userId, $userAgent);
    $result = $statement->fetch();
    $statement->close();
 
@@ -30,8 +30,8 @@ elseif (isset($_COOKIE['token'])) {
       $statement->close();
 
       // Check if the token from the same user agent (browser, OS) and is not outdated
-      $timestamp = strtotime($timestamp);
-      $result = $userAgent == $_SERVER['HTTP_USER_AGENT'] && $timestamp > time() - 34560000;
+      $tokenTime = strtotime($tokenTime);
+      $result = $userAgent == $_SERVER['HTTP_USER_AGENT'] && $tokenTime > $timestamp - 34560000;
       if ($result) {
 
          // Set the main session variable
@@ -44,7 +44,7 @@ elseif (isset($_COOKIE['token'])) {
          $statement->bind_param('iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
          $statement->execute();
          $statement->close();
-         setcookie('token', $token, time() + 31622400, '/');
+         setcookie('token', $token, $timestamp + 31622400, '/');
       }
    }
 
