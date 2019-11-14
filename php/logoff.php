@@ -21,5 +21,9 @@ setcookie('token', null, $timestamp - 42000, '/');
 // End the session
 session_destroy();
 
-// No result is necessary, because the client will be forwarded to the login page anyway
+// Send response
+send_result([
+   'message' => 'Logged off',
+   'success' => true
+]);
 ?>

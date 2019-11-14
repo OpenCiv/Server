@@ -47,8 +47,6 @@ if (!password_verify($params->password, $password)) {
       'message' => 'Password incorrect',
       'success' => false
    ]);
-
-// Password is correct
 } else {
 
    // Create a new token and store in the database and as a cookie
