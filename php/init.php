@@ -39,6 +39,7 @@ class database extends mysqli {
          $data[] = $row;
       }
 
+      $statement->close();
       return $data;
    }
 }
@@ -48,10 +49,7 @@ class database extends mysqli {
  */
 function send_result($result, $code = 200) {
    global $db;
-
-   if ($db != null) {
-      $db->close();
-   }
+   $db->close();
 
    if ($code !== 200) {
       http_response_code($code);

@@ -1,14 +1,9 @@
 <?php
 require 'init.php';
-$db = new database();
 
 // Delete the existing token from the database
 if (isset($_COOKIE['token'])) {
-   $statement = $db->stmt_init();
-   $statement->prepare('DELETE FROM `tokens` WHERE `value` = ?');
-   $statement->bind_param('s', $_COOKIE['token']);
-   $statement->execute();
-   $statement->close();
+   $db->query('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 }
 
 // Remove all session variables

@@ -21,8 +21,6 @@ if (empty($params->password)) {
    ]);
 }
 
-$db = new database();
-
 // Check if the e-mail address is not in use already
 $result = $db->query('SELECT EXISTS (SELECT * FROM `users` WHERE `email` = ?)', 's', $params->email);
 if (!empty($result)) {
