@@ -20,4 +20,5 @@ CREATE TABLE `tokens` (
    `user_agent` VARCHAR(255) NOT NULL
 );';
 $db->query($query);
+echo 'Database reset';
 ?>

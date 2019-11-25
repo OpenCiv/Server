@@ -1,10 +1,10 @@
 <?php
+// We only need to request the time once, at the start, and will be the same throughout the script
+$timestamp = time();
+
 
 // Settings contain credentials and security variables
 require 'settings.php';
-
-// We only need to request the time once, at the start, and will be the same throughout the script
-$timestamp = time();
 
 /**
  * A preset mysqli extension
@@ -12,17 +12,14 @@ $timestamp = time();
 class database extends mysqli {
    function __construct() {
       parent::__construct(settings::$dbhost, settings::$dbuser, settings::$dbpass, settings::$dbname);
-      if ($this->error) {
-         send_result([
-            'message' => 'Could not connect to the database',
-            'success' => false
-         ], 500);
+      if ($this->connect_error) {
+         send_result($this->connect_error, 500);
       }
 
       $this->set_charset('utf8mb4');
    }
 
-   function query($query, $types = '', ...$parameters) {
+   function execute($query, $types = '', ...$parameters) {
       if (strlen($types) !== count($parameters)) {
          throw new Exception('The number of query parameters do not match with the parameter types');
       }
@@ -76,7 +73,7 @@ function generate_token() {
    return implode($pass);
 }
 
-// Start a session, open database, and obtain post parameters
+// Start a session, open the database, and obtain post parameters
 session_start();
 $db = new database();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

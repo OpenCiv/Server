@@ -7,7 +7,7 @@ if (isset($_COOKIE['token'])) {
 }
 
 // Remove all session variables
-$_SESSION = array();
+$_SESSION = [];
 
 // Delete the session and token cookies
 setcookie(session_name(), null, $timestamp - 42000, '/');

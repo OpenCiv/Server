@@ -10,17 +10,17 @@ if (isset($_SESSION['user_id'])) {
 elseif (isset($_COOKIE['token'])) {
 
    // Find the token
-   $query = $db->query('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
+   $query = $db->execute('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 
    // If the token is found...
    if (!empty($query)) {
 
       // ...delete it
-      $db->query('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
+      $db->execute('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 
       // Check if the token from the same user agent (browser, OS) and is not outdated
       $tokenTime = strtotime($tokenTime);
-      $result = $userAgent == $_SERVER['HTTP_USER_AGENT'] && $tokenTime > $timestamp - 34560000;
+      $result = $userAgent == $_SERVER['HTTP_USER_AGENT'] && $tokenTime > $timestamp - 31622400;
       if ($result) {
          $userId = $query['user_id'];
 
@@ -29,7 +29,7 @@ elseif (isset($_COOKIE['token'])) {
 
          // Create a new token
          $token = generate_token();
-         $db->query('INSERT INTO `tokens` (`user_id`, `value`, `user_agent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
+         $db->execute('INSERT INTO `tokens` (`user_id`, `value`, `user_agent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
          setcookie('token', $token, $timestamp + 31622400, '/');
       }
    }
@@ -39,5 +39,6 @@ elseif (isset($_COOKIE['token'])) {
    $result = false;
 }
 
+// Send response
 send_result($result);
 ?>
