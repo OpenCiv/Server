@@ -24,47 +24,26 @@ if (empty($params->password)) {
 $db = new database();
 
 // Check if the e-mail address is not in use already
-$statement = $db->stmt_init();
-$statement->prepare('SELECT EXISTS (SELECT * FROM `Users` WHERE `Email` = ?)');
-$statement->bind_param('s', $params->email);
-$statement->execute();
-$statement->bind_result($exists);
-$statement->fetch();
-if ($exists) {
+$result = $db->query('SELECT EXISTS (SELECT * FROM `users` WHERE `email` = ?)', 's', $params->email);
+if (!empty($result)) {
    send_result([
       'message' => 'E-mail address already used',
       'success' => false
    ]);
 }
 
-$statement->close();
-
 // Create the account
-$statement = $db->stmt_init();
-$statement->prepare('INSERT INTO `Users` (`Name`, `Email`, `Password`, `Verified`) VALUES (?, ?, ?, 0)');
 $password = password_hash($params->password, PASSWORD_BCRYPT);
-$statement->bind_param('sss', $params->name, $params->email, $password);
-$statement->execute();
-$statement->close();
+$db->query('INSERT INTO `users` (`name`, `email`, `password`, `verified`) VALUES (?, ?, ?, 0)', 'sss', $params->name, $params->email, $password);
 
-// Get the user ID
-$statement = $db->stmt_init();
-$statement->prepare('SELECT LAST_INSERT_ID()');
-$statement->execute();
-$statement->bind_result($userId);
-$statement->fetch();
-$statement->close();
-
-// Set the main session variable
-$_SESSION['userId'] = $userId;
+// Get the user ID and store in the session
+$result = $db->query('SELECT LAST_INSERT_ID()');
+$userId = (int)$result[0];
+$_SESSION['user_id'] = $userId;
 
 // Create a new token
 $token = generate_token();
-$statement = $db->stmt_init();
-$statement->prepare('INSERT INTO `Tokens` (`Value`, `UserId`, `UserAgent`) VALUES (?, ?, ?)');
-$statement->bind_param('sis', $token, $userId, $_SERVER['HTTP_USER_AGENT']);
-$statement->execute();
-$statement->close();
+$db->query('INSERT INTO `tokens` (`value`, `user_id`, `user_agent`) VALUES (?, ?, ?)', 'sis', $token, $userId, $_SERVER['HTTP_USER_AGENT']);
 setcookie('token', $token, $timestamp + 31622400, '/');
 
 // Report success

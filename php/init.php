@@ -22,10 +22,17 @@ class database extends mysqli {
       $this->set_charset('utf8mb4');
    }
 
-   function query($query, $types, ...$parameters) {
+   function query($query, $types = '', ...$parameters) {
+      if (strlen($types) !== count($parameters)) {
+         throw new Exception('The number of query parameters do not match with the parameter types');
+      }
+
       $statement = $this->stmt_init();
       $statement->prepare($query);
-      $statement->bind_param($types, ...$parameters);
+      if ($types !== '') {
+         $statement->bind_param($types, ...$parameters);
+      }
+
       $result = $statement->get_result();
       $data = [];
       while ($row = $result->fetch_assoc()) {
@@ -71,8 +78,9 @@ function generate_token() {
    return implode($pass);
 }
 
-// Start a session and obtain post parameters
+// Start a session, open database, and obtain post parameters
 session_start();
+$db = new database();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    $params = json_decode(trim(file_get_contents('php://input')));
 }

@@ -2,22 +2,21 @@
 require 'init.php';
 
 // Check if the user is still logged in
-if (isset($_SESSION['userId'])) {
+if (isset($_SESSION['user_id'])) {
    $result = true;
 }
 
 // Check if a token cookie is set
 elseif (isset($_COOKIE['token'])) {
-   $db = new database();
 
    // Find the token
-   $result = $db->query('SELECT `Timestamp`, `UserId`, `UserAgent` FROM `Tokens` WHERE `Value` = ?', 's', $_COOKIE['token']);
+   $result = $db->query('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 
    // If the token is found...
    if (!empty($result)) {
 
       // ...delete it
-      $db->query('DELETE FROM `Tokens` WHERE `Value` = ?', 's', $_COOKIE['token']);
+      $db->query('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 
       // Check if the token from the same user agent (browser, OS) and is not outdated
       $tokenTime = strtotime($tokenTime);
@@ -25,11 +24,11 @@ elseif (isset($_COOKIE['token'])) {
       if ($result) {
 
          // Set the main session variable
-         $_SESSION['userId'] = $userId;
+         $_SESSION['user_id'] = $userId;
 
          // Create a new token
          $token = generate_token();
-         $db->query('INSERT INTO `Tokens` (`UserId`, `Value`, `UserAgent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
+         $db->query('INSERT INTO `tokens` (`user_id`, `value`, `user_agent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
          setcookie('token', $token, $timestamp + 31622400, '/');
       }
    }

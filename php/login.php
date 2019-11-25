@@ -24,25 +24,19 @@ if (empty($params->password)) {
    ]);
 }
 
-$db = new database();
-
 // Check if the user exists
-$statement = $db->stmt_init();
-$statement->prepare('SELECT `Id`, `Name`, `Password` FROM `Users` WHERE `Email` = ?');
-$statement->bind_param('s', $params->username);
-$statement->execute();
-$statement->bind_result($userId, $userName, $password);
-if (!$statement->fetch()) {
+$result = $db->query('SELECT `id`, `password` FROM `users` WHERE `email` = ?', 's', $params->username);
+if (empty($result)) {
    send_result([
       'message' => 'E-mail address not found',
       'success' => false
    ]);
 }
 
-$statement->close();
+$userId = $result['id'];
 
 // Check password
-if (!password_verify($params->password, $password)) {
+if (!password_verify($params->password, $result['password'])) {
    send_result([
       'message' => 'Password incorrect',
       'success' => false
@@ -51,17 +45,11 @@ if (!password_verify($params->password, $password)) {
 
    // Create a new token and store in the database and as a cookie
    $token = generate_token();
-   $statement = $db->stmt_init();
-   $statement->prepare('INSERT INTO `Tokens` (`UserId`, `Value`, `UserAgent`) VALUES (?, ?, ?)');
-   $statement->bind_param('iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
-   $statement->execute();
-   $statement->close();
+   $db->query('INSERT INTO `tokens` (`user_id`, `value`, `user_agent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
    setcookie('token', $token, $timestamp + 34560000, '/');
 
    // Set session variables
-   $_SESSION['userId'] = $userId;
-   $_SESSION['userEmail'] = $params->username;
-   $_SESSION['userName'] = $userName;
+   $_SESSION['user_id'] = $userId;
 }
 
 // Report success

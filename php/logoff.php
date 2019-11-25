@@ -5,7 +5,7 @@ $db = new database();
 // Delete the existing token from the database
 if (isset($_COOKIE['token'])) {
    $statement = $db->stmt_init();
-   $statement->prepare('DELETE FROM `Tokens` WHERE `Value` = ?');
+   $statement->prepare('DELETE FROM `tokens` WHERE `value` = ?');
    $statement->bind_param('s', $_COOKIE['token']);
    $statement->execute();
    $statement->close();

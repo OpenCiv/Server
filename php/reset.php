@@ -3,21 +3,21 @@ require 'settings.php';
 $db = new mysqli(settings::$dbhost, settings::$dbuser, settings::$dbpass);
 $db->query(sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci`", settings::$dbname));
 $db->select_db(settings::$dbname);
-$query = 'DROP TABLE IF EXISTS `Users`;
-DROP TABLE IF EXISTS `Tokens`;
-CREATE TABLE `Users` (
-  `Id` INT NOT NULL AUTO_INCREMENT,
-  `Email` VARCHAR(254) NOT NULL,
-  `Password` VARCHAR(60) NOT NULL,
-  `Name` VARCHAR(50) NOT NULL,
-  `Verified` BOOLEAN NOT NULL,
-  PRIMARY KEY(`Id`)
+$query = 'DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `tokens`;
+CREATE TABLE `users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(254) NOT NULL,
+  `password` VARCHAR(60) NOT NULL,
+  `name` VARCHAR(50) NOT NULL,
+  `verified` BOOLEAN NOT NULL,
+  PRIMARY KEY(`id`)
 );
-CREATE TABLE `Tokens` (
-   `Timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-   `Value` VARCHAR(64) NOT NULL,
-   `UserId` INT NOT NULL,
-   `UserAgent` VARCHAR(255) NOT NULL
+CREATE TABLE `tokens` (
+   `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   `value` VARCHAR(64) NOT NULL,
+   `user_id` INT NOT NULL,
+   `user_agent` VARCHAR(255) NOT NULL
 );';
 $db->query($query);
 ?>
