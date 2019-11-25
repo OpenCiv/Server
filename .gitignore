@@ -59,5 +59,8 @@ typings/
 
 # next.js build output
 .next
+
+# Custom
 build.cmd
 php/settings.php
+php/test.php

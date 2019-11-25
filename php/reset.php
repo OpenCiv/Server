@@ -19,6 +19,6 @@ CREATE TABLE `tokens` (
    `user_id` INT NOT NULL,
    `user_agent` VARCHAR(255) NOT NULL
 );';
-$db->query($query);
-echo 'Database reset';
+$success = $db->query($query);
+echo $success ? 'Database reset' : 'Something went wrong';
 ?>

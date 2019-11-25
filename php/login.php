@@ -21,10 +21,10 @@ if (empty($query)) {
    send_result('E-mail address not found');
 }
 
-$userId = $query['id'];
+$userId = (int)$query[0][0];
 
 // Check password
-if (!password_verify($params->password, $query['password'])) {
+if (!password_verify($params->password, $query[0][1])) {
    send_result('Password incorrect');
 } else {
 

@@ -27,15 +27,19 @@ class database extends mysqli {
     * @return array The results of the query
     */
    function execute($query, $types = '', ...$parameters) {
-      $statement = $this->stmt_init();
-      $statement->prepare($query);
+      $statement = $this->prepare($query);
       if ($types !== '') {
          $statement->bind_param($types, ...$parameters);
       }
 
+      $statement->execute();
       $result = $statement->get_result();
+      if (gettype($result) === 'boolean') {
+         return $result;
+      }
+
       $data = [];
-      while ($row = $result->fetch_assoc()) {
+      while ($row = $result->fetch_row()) {
          $data[] = $row;
       }
 
