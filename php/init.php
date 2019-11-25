@@ -67,7 +67,7 @@ function send_result($result, $code = 200) {
  * Returns a string with 64 random characters
  */
 function generate_token() {
-   $alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+   $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY1Z234567890';
    $pass = [];
    $max = strlen($alphabet) - 1;
    for ($character = 0; $character < 64; $character++) {
