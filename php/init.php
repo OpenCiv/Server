@@ -21,6 +21,19 @@ class database extends mysqli {
 
       $this->set_charset('utf8mb4');
    }
+
+   function query($query, $types, ...$parameters) {
+      $statement = $this->stmt_init();
+      $statement->prepare($query);
+      $statement->bind_param($types, ...$parameters);
+      $result = $statement->get_result();
+      $data = [];
+      while ($row = $result->fetch_assoc()) {
+         $data[] = $row;
+      }
+
+      return $data;
+   }
 }
 
 /**
