@@ -1,33 +1,27 @@
 <?php
 require 'init.php';
+
+// A login attempt should come as a post method
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+   send_result('Incorrect request method', 405);
+}
+
 if (empty($params->name)) {
-   send_result([
-      'message' => 'Name missing',
-      'success' => false
-   ]);
+   send_result('Name missing', 400);
 }
 
 if (empty($params->email)) {
-   send_result([
-      'message' => 'E-mail address missing',
-      'success' => false
-   ]);
+   send_result('E-mail address missing', 400);
 }
 
 if (empty($params->password)) {
-   send_result([
-      'message' => 'Password missing',
-      'success' => false
-   ]);
+   send_result('Password missing', 400);
 }
 
 // Check if the e-mail address is not in use already
 $query = $db->execute('SELECT EXISTS (SELECT * FROM `users` WHERE `email` = ?)', 's', $params->email);
 if (!empty($query)) {
-   send_result([
-      'message' => 'E-mail address already used',
-      'success' => false
-   ]);
+   send_result('E-mail address already in use');
 }
 
 // Create the account
@@ -45,8 +39,5 @@ $db->execute('INSERT INTO `tokens` (`value`, `user_id`, `user_agent`) VALUES (?,
 setcookie('token', $token, $timestamp + 31622400, '/');
 
 // Report success
-send_result([
-   'message' => 'Account created',
-   'success' => true
-]);
+send_result(false);
 ?>

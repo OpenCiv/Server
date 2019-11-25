@@ -3,44 +3,29 @@ require 'init.php';
 
 // A login attempt should come as a post method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-   send_result([
-      'message' => 'Incorrect request method',
-      'success' => false
-   ], 405);
+   send_result('Incorrect request method', 405);
 }
 
 // Check if parameters are not empty
 if (empty($params->username)) {
-   send_result([
-      'message' => 'E-mail address missing',
-      'success' => false
-   ]);
+   send_result('E-mail address missing', 400);
 }
 
 if (empty($params->password)) {
-   send_result([
-      'message' => 'Password missing',
-      'success' => false
-   ]);
+   send_result('Password missing', 400);
 }
 
 // Check if the user exists
 $query = $db->execute('SELECT `id`, `password` FROM `users` WHERE `email` = ?', 's', $params->username);
 if (empty($query)) {
-   send_result([
-      'message' => 'E-mail address not found',
-      'success' => false
-   ]);
+   send_result('E-mail address not found');
 }
 
 $userId = $query['id'];
 
 // Check password
 if (!password_verify($params->password, $query['password'])) {
-   send_result([
-      'message' => 'Password incorrect',
-      'success' => false
-   ]);
+   send_result('Password incorrect');
 } else {
 
    // Create a new token and store in the database and as a cookie
@@ -53,8 +38,5 @@ if (!password_verify($params->password, $query['password'])) {
 }
 
 // Report success
-send_result([
-   'message' => 'Inloggen gelukt',
-   'success' => true
-]);
+send_result(false);
 ?>

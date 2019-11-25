@@ -1,7 +1,7 @@
 <?php
+
 // We only need to request the time once, at the start, and will be the same throughout the script
 $timestamp = time();
-
 
 // Settings contain credentials and security variables
 require 'settings.php';
@@ -19,11 +19,14 @@ class database extends mysqli {
       $this->set_charset('utf8mb4');
    }
 
+   /**
+    * Executes a query and returns the result
+    * @param query The SQL query
+    * @param types The first argument of mysqli_stmt::bind_params
+    * @param parameters The other arguments of mysqli_stmt::bind_params
+    * @return array The results of the query
+    */
    function execute($query, $types = '', ...$parameters) {
-      if (strlen($types) !== count($parameters)) {
-         throw new Exception('The number of query parameters do not match with the parameter types');
-      }
-
       $statement = $this->stmt_init();
       $statement->prepare($query);
       if ($types !== '') {
@@ -43,6 +46,8 @@ class database extends mysqli {
 
 /**
  * The function returns results to the client
+ * @param result The parameter will be encoded into JSON and sent back to the client
+ * @param code The HTTP status code
  */
 function send_result($result, $code = 200) {
    global $db;
@@ -59,7 +64,8 @@ function send_result($result, $code = 200) {
 }
 
 /**
- * Returns a string with 64 random characters
+ * Returns a token string
+ * @return string A string with 64 random characters
  */
 function generate_token() {
    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY1Z234567890';
