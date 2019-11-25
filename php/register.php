@@ -22,8 +22,8 @@ if (empty($params->password)) {
 }
 
 // Check if the e-mail address is not in use already
-$result = $db->query('SELECT EXISTS (SELECT * FROM `users` WHERE `email` = ?)', 's', $params->email);
-if (!empty($result)) {
+$query = $db->query('SELECT EXISTS (SELECT * FROM `users` WHERE `email` = ?)', 's', $params->email);
+if (!empty($query)) {
    send_result([
       'message' => 'E-mail address already used',
       'success' => false
@@ -35,8 +35,8 @@ $password = password_hash($params->password, PASSWORD_BCRYPT);
 $db->query('INSERT INTO `users` (`name`, `email`, `password`, `verified`) VALUES (?, ?, ?, 0)', 'sss', $params->name, $params->email, $password);
 
 // Get the user ID and store in the session
-$result = $db->query('SELECT LAST_INSERT_ID()');
-$userId = (int)$result[0];
+$query = $db->query('SELECT LAST_INSERT_ID()');
+$userId = (int)$query[0];
 $_SESSION['user_id'] = $userId;
 
 // Create a new token

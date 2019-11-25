@@ -25,18 +25,18 @@ if (empty($params->password)) {
 }
 
 // Check if the user exists
-$result = $db->query('SELECT `id`, `password` FROM `users` WHERE `email` = ?', 's', $params->username);
-if (empty($result)) {
+$query = $db->query('SELECT `id`, `password` FROM `users` WHERE `email` = ?', 's', $params->username);
+if (empty($query)) {
    send_result([
       'message' => 'E-mail address not found',
       'success' => false
    ]);
 }
 
-$userId = $result['id'];
+$userId = $query['id'];
 
 // Check password
-if (!password_verify($params->password, $result['password'])) {
+if (!password_verify($params->password, $query['password'])) {
    send_result([
       'message' => 'Password incorrect',
       'success' => false
@@ -46,7 +46,7 @@ if (!password_verify($params->password, $result['password'])) {
    // Create a new token and store in the database and as a cookie
    $token = generate_token();
    $db->query('INSERT INTO `tokens` (`user_id`, `value`, `user_agent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
-   setcookie('token', $token, $timestamp + 34560000, '/');
+   setcookie('token', $token, $timestamp + 31622400, '/');
 
    // Set session variables
    $_SESSION['user_id'] = $userId;

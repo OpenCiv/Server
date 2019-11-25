@@ -10,10 +10,10 @@ if (isset($_SESSION['user_id'])) {
 elseif (isset($_COOKIE['token'])) {
 
    // Find the token
-   $result = $db->query('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
+   $query = $db->query('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
 
    // If the token is found...
-   if (!empty($result)) {
+   if (!empty($query)) {
 
       // ...delete it
       $db->query('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
@@ -22,6 +22,7 @@ elseif (isset($_COOKIE['token'])) {
       $tokenTime = strtotime($tokenTime);
       $result = $userAgent == $_SERVER['HTTP_USER_AGENT'] && $tokenTime > $timestamp - 34560000;
       if ($result) {
+         $userId = $query['user_id'];
 
          // Set the main session variable
          $_SESSION['user_id'] = $userId;
