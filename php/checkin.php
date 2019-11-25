@@ -11,23 +11,13 @@ elseif (isset($_COOKIE['token'])) {
    $db = new database();
 
    // Find the token
-   $statement = $db->stmt_init();
-   $statement->prepare('SELECT `Timestamp`, `UserId`, `UserAgent` FROM `Tokens` WHERE `Value` = ?');
-   $statement->bind_param('s', $_COOKIE['token']);
-   $statement->execute();
-   $statement->bind_result($tokenTime, $userId, $userAgent);
-   $result = $statement->fetch();
-   $statement->close();
+   $result = $db->query('SELECT `Timestamp`, `UserId`, `UserAgent` FROM `Tokens` WHERE `Value` = ?', 's', $_COOKIE['token']);
 
    // If the token is found...
-   if ($result) {
+   if (!empty($result)) {
 
       // ...delete it
-      $statement = $db->stmt_init();
-      $statement->prepare('DELETE FROM `Tokens` WHERE `Value` = ?');
-      $statement->bind_param('s', $_COOKIE['token']);
-      $statement->execute();
-      $statement->close();
+      $db->query('DELETE FROM `Tokens` WHERE `Value` = ?', 's', $_COOKIE['token']);
 
       // Check if the token from the same user agent (browser, OS) and is not outdated
       $tokenTime = strtotime($tokenTime);
@@ -39,11 +29,7 @@ elseif (isset($_COOKIE['token'])) {
 
          // Create a new token
          $token = generate_token();
-         $statement = $db->stmt_init();
-         $statement->prepare('INSERT INTO `Tokens` (`UserId`, `Value`, `UserAgent`) VALUES (?, ?, ?)');
-         $statement->bind_param('iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
-         $statement->execute();
-         $statement->close();
+         $db->query('INSERT INTO `Tokens` (`UserId`, `Value`, `UserAgent`) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
          setcookie('token', $token, $timestamp + 31622400, '/');
       }
    }
