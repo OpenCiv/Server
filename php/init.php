@@ -35,6 +35,7 @@ class database extends mysqli {
       $statement->execute();
       $result = $statement->get_result();
       if (gettype($result) === 'boolean') {
+         $statement->close();
          return $result;
       }
 
