@@ -64,3 +64,4 @@ typings/
 build.cmd
 php/settings.php
 php/test.php
+sql/
