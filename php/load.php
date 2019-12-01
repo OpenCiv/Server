@@ -15,7 +15,7 @@ foreach ($query as $improvement) {
    $result[(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = $improvement[2];
 }
 
-$query = $db->execute('SELECT unit.id, unit.x, unit.y, unit.player_id, action FROM units unit INNER JOIN players player ON (player.id = unit.player_id) WHERE player.game_id = ?', 'i', $params->game);
+$query = $db->execute('SELECT unit.id, unit.x, unit.y, unit.player_id, unit.action FROM units unit INNER JOIN players player ON (player.id = unit.player_id) WHERE player.game_id = ?', 'i', $params->game);
 foreach ($query as $unit) {
    $result[(int)$unit[2]][(int)$unit[1]]['units'][] = ['id' => $unit[0], 'player_id' => $unit[3]];
 }
