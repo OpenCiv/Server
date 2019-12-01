@@ -24,19 +24,19 @@ $query = 'CREATE TABLE `tokens` (
    `user_agent` VARCHAR(255) NOT NULL
 );';
 $success &= $db->query($query);
-
+*/
 $success &= $db->query('ALTER TABLE `improvements` DROP CONSTRAINT `fk_improvement_game`;');
 $success &= $db->query('ALTER TABLE `improvements` DROP CONSTRAINT `fk_improvement_owner`;');
-$query = 'ALTER TABLE `units` DROP CONSTRAINT `fk_unit_player`;';
-$success &= $db->query($query);
-$query = 'ALTER TABLE `players` DROP CONSTRAINT `fk_player_game`;';
-$success &= $db->query($query);
-$query = 'ALTER TABLE `players` DROP CONSTRAINT `fk_player_user`;';
-$success &= $db->query($query);
-$query = 'ALTER TABLE `terrain` DROP CONSTRAINT `fk_terrain_game`;';
-$success &= $db->query($query);
+$success &= $db->query('ALTER TABLE `units` DROP CONSTRAINT `fk_unit_player`;');
+$success &= $db->query('ALTER TABLE `players` DROP CONSTRAINT `fk_player_game`;');
+$success &= $db->query('ALTER TABLE `players` DROP CONSTRAINT `fk_player_user`;');
+$success &= $db->query('ALTER TABLE `terrain` DROP CONSTRAINT `fk_terrain_game`;');
 $query = 'DROP TABLE IF EXISTS `games`;';
-$success &= $db->query($query);
+$success &= $db->query('DROP TABLE IF EXISTS `improvements`;');
+$success &= $db->query('DROP TABLE IF EXISTS `units`;');
+$success &= $db->query('DROP TABLE IF EXISTS `players`;');
+$success &= $db->query('DROP TABLE IF EXISTS `terrain`;');
+$success &= $db->query('DROP TABLE IF EXISTS `games`;');
 $query = 'DROP TABLE IF EXISTS `terrain`;';
 $success &= $db->query($query);
 $query = 'DROP TABLE IF EXISTS `players`;';
@@ -45,21 +45,21 @@ $query = 'DROP TABLE IF EXISTS `units`;';
 $success &= $db->query($query);
 $query = 'DROP TABLE IF EXISTS `improvements`;';
 $success &= $db->query($query);
-*/
 
 $query = 'CREATE TABLE `games` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) NOT NULL,
-  `size` POINT NOT NULL SRID 0,
-  PRIMARY KEY(`id`)
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `x` SMALLINT NOT NULL,
+   `y` SMALLINT NOT NULL,
+   `name` VARCHAR(50) NOT NULL,
+   PRIMARY KEY(`id`)
    );';
 $success &= $db->query($query);
 $query = 'CREATE TABLE `terrain` (
    `game_id` INT NOT NULL,
-   `coordinates` POINT NOT NULL SRID 0,
+   `x` SMALLINT NOT NULL,
+   `y` SMALLINT NOT NULL,
    `type` VARCHAR(20) NOT NULL,
-   `features` BIGINT NOT NULL,
-   PRIMARY KEY(`game_id`, `coordinates`),
+   PRIMARY KEY(`game_id`, `x`, `y`),
    CONSTRAINT `fk_terrain_game` FOREIGN KEY (`game_id`) REFERENCES `games`(`id`)
    );';
 $success &= $db->query($query);
@@ -76,19 +76,21 @@ $success &= $db->query($query);
 $query = 'CREATE TABLE `units` (
    `id` INT NOT NULL AUTO_INCREMENT,
    `player_id` INT NOT NULL,
-   `coordinates` POINT NOT NULL SRID 0,
+   `x` SMALLINT NOT NULL,
+   `y` SMALLINT NOT NULL,
    `features` BIGINT NOT NULL,
-   `action` VARCHAR(20) NOT NULL,
+   `action` VARCHAR(20) NULL,
    PRIMARY KEY(`id`),
    CONSTRAINT `fk_unit_player` FOREIGN KEY (`player_id`) REFERENCES `players`(`id`)
    );';
 $success &= $db->query($query);
 $query = 'CREATE TABLE `improvements` (
    `game_id` INT NOT NULL,
-   `coordinates` POINT NOT NULL SRID 0,
+   `x` SMALLINT NOT NULL,
+   `y` SMALLINT NOT NULL,
    `type` VARCHAR(20) NOT NULL,
    `owner_id` INT NULL,
-   PRIMARY KEY(`game_id`, `coordinates`),
+   PRIMARY KEY(`game_id`, `x`, `y`),
    CONSTRAINT `fk_improvement_game` FOREIGN KEY (`game_id`) REFERENCES `games`(`id`),
    CONSTRAINT `fk_improvement_owner` FOREIGN KEY (`owner_id`) REFERENCES `players`(`id`)
    );';
