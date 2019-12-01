@@ -16,6 +16,7 @@ if (empty($query)) {
    send_result('Game not found', 400);
 }
 
+$result['player']['name'] = $playerName;
 $result['game']['name'] = $query[0][0];
 $result['game']['x'] = (int)$query[0][1];
 $result['game']['y'] = (int)$query[0][2];
