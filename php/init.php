@@ -28,6 +28,10 @@ class database extends mysqli {
     */
    function execute($query, $types = '', ...$parameters) {
       $statement = $this->prepare($query);
+      if (!$statement) {
+         send_result('Query failed: ' . $query, 500);
+      }
+
       if ($types !== '') {
          $statement->bind_param($types, ...$parameters);
       }
@@ -66,6 +70,30 @@ function send_result($result, $code = 200) {
    header('Content-Type: application/json');
    echo json_encode($result);
    exit;
+}
+
+/**
+ * Destroys the session and token and returns 401
+ */
+function logoff() {
+
+   // Delete the existing token from the database
+   if (isset($_COOKIE['token'])) {
+      $db->execute('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
+   }
+
+   // Remove all session variables
+   $_SESSION = [];
+
+   // Delete the session and token cookies
+   setcookie(session_name(), null, $timestamp - 42000, '/');
+   setcookie('token', null, $timestamp - 42000, '/');
+
+   // End the session
+   session_destroy();
+
+   // Send response
+   send_result('Logged off', 401);
 }
 
 /**

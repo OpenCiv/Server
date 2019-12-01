@@ -17,8 +17,5 @@ setcookie('token', null, $timestamp - 42000, '/');
 session_destroy();
 
 // Send response
-send_result([
-   'message' => 'Logged off',
-   'success' => true
-]);
+send_result('Logged off');
 ?>
