@@ -1,14 +1,5 @@
 <?php
-
-// Circumventing verification
-require 'init.php';
-$gameId = 1;
-$userId = 1;
-$playerId = 1;
-$playerName = 'Knut';
-
-// Use this for actual verification
-// require 'verify.php';
+require 'verify.php';
 
 // Getting game details
 $query = $db->execute('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);

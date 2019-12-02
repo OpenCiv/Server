@@ -1,6 +1,13 @@
 <?php
 require 'init.php';
 
+// Circumventing verification
+$gameId = 1;
+$userId = 1;
+$playerId = 1;
+$playerName = 'Knut';
+return;
+
 // Check if a session exists
 if (!isset($_SESSION['user_id'])) {
 
