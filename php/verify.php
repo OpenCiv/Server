@@ -35,23 +35,19 @@ if (!isset($_SESSION['user_id'])) {
 
    // Set the main session variable
    $_SESSION['user_id'] = (int)$query[0][1];
-   $query = $db->execute('SELECT `email`, `name`, `verified` FROM `users` WHERE `id` = ?', 'i', $_SESSION['user_id']);
+   $query = $db->execute('SELECT `verified` FROM `users` WHERE `id` = ?', 'i', $_SESSION['user_id']);
    if (empty($query)) {
       unset($_SESSION['user_id']);
-      send_result('User not found', 400);
+      send_result('User not found', 401);
    }
 
-   if (!$query[0][2]) {
+   // Check if the user is verified
+   if (!$query[0][0]) {
       send_result('User not verified', 403);
    }
-
-   $_SESSION['user_email'] = $query[0][0];
-   $_SESSION['user_name'] = $query[0][1];
 }
 
 $userId = &$_SESSION['user_id'];
-$userEmail = &$_SESSION['user_email'];
-$userName = &$_SESSION['user_name'];
 
 // Check the game
 if (!$_SESSION['game_id']) {
@@ -65,32 +61,23 @@ if (!$_SESSION['game_id']) {
       send_result('Invalid game identifier', 400);
    }
 
-   $query = $db->execute('SELECT name, x, y FROM games WHERE game_id = ?', 'i', $gameId);
-   if (empty($query)) {
+   $query = $db->execute('SELECT EXISTS (SELECT * FROM games WHERE game_id = ?)', 'i', $_SESSION['game_id']);
+   if ($query[0][0] == false) {
       send_result('Game not found', 400);
    }
-
-   $_SESSION['game_name'] = $query[0][0];
-   $_SESSION['game_x'] = (int)$query[0][1];
-   $_SESSION['game_y'] = (int)$query[0][2];
 }
 
 $gameId = &$_SESSION['game_id'];
-$gameName = &$_SESSION['game_name'];
-$gameX = &$_SESSION['game_x'];
-$gameY = &$_SESSION['game_y'];
 
 // Check the player info
 if (!$_SESSION['player_id']) {
-   $query = $db->execute('SELECT id, name FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
+   $query = $db->execute('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
    if (empty($query)) {
-      send_result('Not a player in this game', 401);
+      send_result('Not a player in this game', 400);
    }
 
    $_SESSION['player_id'] = (int)$query[0][0];
-   $_SESSION['player_name'] = $query[0][1];
 }
 
 $playerId = &$_SESSION['player_id'];
-$playerName = &$_SESSION['player_name'];
 ?>
