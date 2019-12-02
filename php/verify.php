@@ -31,7 +31,7 @@ if (!isset($_SESSION['user_id'])) {
    $query = $db->execute('SELECT `email`, `name`, `verified` FROM `users` WHERE `id` = ?', 'i', $_SESSION['user_id']);
    if (empty($query)) {
       unset($_SESSION['user_id']);
-      send_result('User not found', 401);
+      send_result('User not found', 400);
    }
 
    if (!$query[0][2]) {
@@ -43,8 +43,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = &$_SESSION['user_id'];
-if (!$_SESSION['user_email'] || !$_SESSION['user_name']) {
-}
+$userEmail = &$_SESSION['user_email'];
+$userName = &$_SESSION['user_name'];
 
 // Check the game
 if (!$_SESSION['game_id']) {
@@ -57,17 +57,24 @@ if (!$_SESSION['game_id']) {
       unset($_SESSION['game_id']);
       send_result('Invalid game identifier', 400);
    }
-}
 
-$gameId = &$_SESSION['game_id'];
-
-// Check the player info
-if (!$_SESSION['player_id'] || !$_SESSION['player_name']) {
    $query = $db->execute('SELECT name, x, y FROM games WHERE game_id = ?', 'i', $gameId);
    if (empty($query)) {
       send_result('Game not found', 400);
    }
 
+   $_SESSION['game_name'] = $query[0][0];
+   $_SESSION['game_x'] = (int)$query[0][1];
+   $_SESSION['game_y'] = (int)$query[0][2];
+}
+
+$gameId = &$_SESSION['game_id'];
+$gameName = &$_SESSION['game_name'];
+$gameX = &$_SESSION['game_x'];
+$gameY = &$_SESSION['game_y'];
+
+// Check the player info
+if (!$_SESSION['player_id']) {
    $query = $db->execute('SELECT id, name FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
    if (empty($query)) {
       send_result('Not a player in this game', 401);
