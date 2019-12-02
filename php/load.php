@@ -7,16 +7,21 @@ if (empty($query)) {
    send_result('Game not found', 400);
 }
 
-$result['player']['name'] = $playerName;
 $result['game']['name'] = $query[0][0];
 $result['game']['x'] = (int)$query[0][1];
 $result['game']['y'] = (int)$query[0][2];
+
+$query = $db->execute('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
 
 // Getting player info
 $result['players'] = [];
 $query = $db->execute('SELECT id, user_id, name FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $result['players'][] = ['id' => (int)$player[0], 'name' => $player[2]];
+   $player_result = ['id' => (int)$player[0], 'name' => $player[2]];
+   $result['players'][] = $player_result;
+   if ($player[1] == $playerId) {
+      $result['player'] = $player_result;
+   }
 }
 
 // Getting the map
