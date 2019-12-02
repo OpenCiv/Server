@@ -1,71 +1,71 @@
-ALTER TABLE `improvements` DROP FOREIGN KEY `fk_improvement_game`;
-ALTER TABLE `improvements` DROP FOREIGN KEY `fk_improvement_owner`;
-ALTER TABLE `units` DROP FOREIGN KEY `fk_unit_player`;
-ALTER TABLE `players` DROP FOREIGN KEY `fk_player_game`;
-ALTER TABLE `players` DROP FOREIGN KEY `fk_player_user`;
-ALTER TABLE `terrain` DROP FOREIGN KEY `fk_terrain_game`;
-DROP TABLE IF EXISTS `games`;
-DROP TABLE IF EXISTS `improvements`;
-DROP TABLE IF EXISTS `units`;
-DROP TABLE IF EXISTS `players`;
-DROP TABLE IF EXISTS `terrain`;
-DROP TABLE IF EXISTS `games`;
-DROP TABLE IF EXISTS `terrain`;
-DROP TABLE IF EXISTS `players`;
-DROP TABLE IF EXISTS `units`;
-DROP TABLE IF EXISTS `improvements`;
+ALTER TABLE improvements DROP FOREIGN KEY fk_improvement_game;
+ALTER TABLE improvements DROP FOREIGN KEY fk_improvement_owner;
+ALTER TABLE units DROP FOREIGN KEY fk_unit_player;
+ALTER TABLE players DROP FOREIGN KEY fk_player_game;
+ALTER TABLE players DROP FOREIGN KEY fk_player_user;
+ALTER TABLE terrain DROP FOREIGN KEY fk_terrain_game;
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS improvements;
+DROP TABLE IF EXISTS units;
+DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS terrain;
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS terrain;
+DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS units;
+DROP TABLE IF EXISTS improvements;
 
-CREATE TABLE `games` (
-   `id` INT NOT NULL AUTO_INCREMENT,
-   `x` SMALLINT NOT NULL,
-   `y` SMALLINT NOT NULL,
-   `name` VARCHAR(50) NOT NULL,
-   PRIMARY KEY(`id`)
+CREATE TABLE games (
+   id INT NOT NULL AUTO_INCREMENT,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   PRIMARY KEY(id)
    );
 
-CREATE TABLE `terrain` (
-   `game_id` INT NOT NULL,
-   `x` SMALLINT NOT NULL,
-   `y` SMALLINT NOT NULL,
-   `type` VARCHAR(20) NOT NULL,
-   PRIMARY KEY(`game_id`, `x`, `y`),
-   CONSTRAINT `fk_terrain_game` FOREIGN KEY (`game_id`) REFERENCES `games`(`id`)
+CREATE TABLE terrain (
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   PRIMARY KEY(game_id, x, y),
+   CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
    );
 
-CREATE TABLE `players` (
-   `id` INT NOT NULL AUTO_INCREMENT,
-   `user_id` INT NOT NULL,
-   `game_id` INT NOT NULL,
-   `name` VARCHAR(50) NOT NULL,
-   PRIMARY KEY(`id`),
-   CONSTRAINT `fk_player_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
-   CONSTRAINT `fk_player_game` FOREIGN KEY (`game_id`) REFERENCES `games`(`id`)
+CREATE TABLE players (
+   id INT NOT NULL AUTO_INCREMENT,
+   user_id INT NOT NULL,
+   game_id INT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   PRIMARY KEY(id),
+   CONSTRAINT fk_player_user FOREIGN KEY (user_id) REFERENCES users(id),
+   CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
    );
 
-CREATE TABLE `units` (
-   `id` INT NOT NULL AUTO_INCREMENT,
-   `player_id` INT NOT NULL,
-   `x` SMALLINT NOT NULL,
-   `y` SMALLINT NOT NULL,
-   `action` VARCHAR(20) NULL,
-   PRIMARY KEY(`id`),
-   CONSTRAINT `fk_unit_player` FOREIGN KEY (`player_id`) REFERENCES `players`(`id`)
+CREATE TABLE units (
+   id INT NOT NULL AUTO_INCREMENT,
+   player_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   action VARCHAR(20) NULL,
+   PRIMARY KEY(id),
+   CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
    );
 
-CREATE TABLE `improvements` (
-   `game_id` INT NOT NULL,
-   `x` SMALLINT NOT NULL,
-   `y` SMALLINT NOT NULL,
-   `type` VARCHAR(20) NOT NULL,
-   `owner_id` INT NULL,
-   PRIMARY KEY(`game_id`, `x`, `y`),
-   CONSTRAINT `fk_improvement_game` FOREIGN KEY (`game_id`) REFERENCES `games`(`id`),
-   CONSTRAINT `fk_improvement_owner` FOREIGN KEY (`owner_id`) REFERENCES `players`(`id`)
+CREATE TABLE improvements (
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   owner_id INT NULL,
+   PRIMARY KEY(game_id, x, y),
+   CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id),
+   CONSTRAINT fk_improvement_owner FOREIGN KEY (owner_id) REFERENCES players(id)
    );
 
 INSERT INTO games (name, x, y) VALUES ('dummy', 10, 10), ('alpha', 10, 10);
 
-INSERT INTO players (user_id, game_id, name) VALUES (1, 1, "Knut");
+INSERT INTO players (user_id, game_id, name) VALUES (1, 1, 'Knut');
 
 INSERT INTO terrain (game_id, x, y, type) VALUES
 (1, 0, 0, 'water'), (1, 0, 1, 'water'), (1, 0, 2, 'water'), (1, 0, 3, 'grass'), (1, 0, 4, 'grass'), (1, 0, 5, 'grass'), (1, 0, 6, 'grass'), (1, 0, 7, 'grass'), (1, 0, 8, 'grass'), (1, 0, 9, 'grass'),

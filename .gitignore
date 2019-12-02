@@ -63,4 +63,3 @@ typings/
 # Custom
 build.cmd
 php/settings.php
-php/test.php
