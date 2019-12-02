@@ -31,8 +31,14 @@ $result['map'] = [];
 $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
    $result['map'][(int)$tile[1]][(int)$tile[0]]['type'] = $tile[2];
+   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'] = [];
    $result['map'][(int)$tile[1]][(int)$tile[0]]['improvements'] = [];
    $result['map'][(int)$tile[1]][(int)$tile[0]]['units'] = [];
+}
+
+$query = $db->execute('SELECT x, y, type FROM resources WHERE game_id = ?', 'i', $gameId);
+foreach ($query as $tile) {
+   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'][] = $tile[2];
 }
 
 // Then the improvements
