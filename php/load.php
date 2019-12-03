@@ -39,15 +39,15 @@ foreach ($query as $tile) {
 }
 
 // Getting the resources
-$query = $db->execute('SELECT x, y, type FROM resources WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type, quantity FROM resources WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'][] = $tile[2];
+   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'][] = ['type' => $tile[2], 'quantity' => (double)$tile[3]];
 }
 
 // Getting the improvements
-$query = $db->execute('SELECT x, y, type, quantity FROM improvements WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
-   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = ['type' => $improvement[2], 'quantity' => (double)$improvement[3]];
+   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = $improvement[2];
 }
 
 // Getting the units

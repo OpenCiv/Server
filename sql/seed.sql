@@ -1,5 +1,4 @@
 ALTER TABLE improvements DROP FOREIGN KEY fk_improvement_game;
-ALTER TABLE improvements DROP FOREIGN KEY fk_improvement_owner;
 ALTER TABLE units DROP FOREIGN KEY fk_unit_player;
 ALTER TABLE players DROP FOREIGN KEY fk_player_game;
 ALTER TABLE players DROP FOREIGN KEY fk_player_user;
@@ -70,10 +69,8 @@ CREATE TABLE improvements (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
-   owner_id INT NULL,
    PRIMARY KEY(game_id, x, y),
-   CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id),
-   CONSTRAINT fk_improvement_owner FOREIGN KEY (owner_id) REFERENCES players(id)
+   CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
 INSERT INTO games (name, x, y) VALUES ('dummy', 10, 10), ('alpha', 10, 10);
@@ -100,16 +97,16 @@ INSERT INTO resources (game_id, x, y, type, quantity) VALUES
 (1, 4, 6, 'sandstone', 10000),
 (1, 2, 7, 'silver', 1000);
 
-INSERT INTO improvements (game_id, x, y, type, owner_id) VALUES
-(1, 0, 3, 'castle', NULL),
-(1, 6, 1, 'tower', NULL),
-(1, 6, 2, 'craftshop', NULL),
-(1, 7, 2, 'fisher', NULL),
-(1, 5, 3, 'market', NULL),
-(1, 6, 3, 'church', NULL),
-(1, 7, 3, 'temple', NULL),
-(1, 9, 8, 'pyramid', NULL),
-(1, 9, 9, 'oracle', NULL);
+INSERT INTO improvements (game_id, x, y, type) VALUES
+(1, 0, 3, 'castle'),
+(1, 6, 1, 'tower'),
+(1, 6, 2, 'craftshop'),
+(1, 7, 2, 'fisher'),
+(1, 5, 3, 'market'),
+(1, 6, 3, 'church'),
+(1, 7, 3, 'temple'),
+(1, 9, 8, 'pyramid'),
+(1, 9, 9, 'oracle');
 
 INSERT INTO units (player_id, x, y, action) VALUES
 (1, 0, 4, NULL);
