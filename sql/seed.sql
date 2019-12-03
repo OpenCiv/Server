@@ -40,6 +40,7 @@ CREATE TABLE resources (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
+   quantity FLOAT NOT NULL,
    PRIMARY KEY(game_id, x, y),
    CONSTRAINT fk_resource_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -91,12 +92,13 @@ INSERT INTO terrain (game_id, x, y, type) VALUES
 (1, 8, 0, 'water'), (1, 8, 1, 'water'), (1, 8, 2, 'water'), (1, 8, 3, 'water'), (1, 8, 4, 'water'), (1, 8, 5, 'water'), (1, 8, 6, 'water'), (1, 8, 7, 'water'), (1, 8, 8, 'water'), (1, 8, 9, 'grass'),
 (1, 9, 0, 'water'), (1, 9, 1, 'water'), (1, 9, 2, 'water'), (1, 9, 3, 'water'), (1, 9, 4, 'water'), (1, 9, 5, 'water'), (1, 9, 6, 'water'), (1, 9, 7, 'desert'), (1, 9, 8, 'desert'), (1, 9, 9, 'desert');
 
-INSERT INTO resources (game_id, x, y, type) VALUES
-(1, 0, 6, 'bronze'),
-(1, 1, 6, 'copper'),
-(1, 2, 6, 'gold'),
-(1, 3, 6, 'iron'),
-(1, 4, 6, 'sandstone');
+INSERT INTO resources (game_id, x, y, type, quantity) VALUES
+(1, 0, 6, 'bronze', 5000),
+(1, 1, 6, 'copper', 3000),
+(1, 2, 6, 'gold', 500),
+(1, 3, 6, 'iron', 2000),
+(1, 4, 6, 'sandstone', 10000),
+(1, 2, 7, 'silver', 1000);
 
 INSERT INTO improvements (game_id, x, y, type, owner_id) VALUES
 (1, 0, 3, 'castle', NULL),

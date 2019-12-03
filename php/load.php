@@ -27,7 +27,9 @@ foreach ($query as $player) {
 // Getting the map
 $result['map'] = [];
 
-// First the terrain
+// Note that the y-coordinate comes before the x-coordinate for CSS reasons
+
+// Getting the terrain
 $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
    $result['map'][(int)$tile[1]][(int)$tile[0]]['type'] = $tile[2];
@@ -36,22 +38,24 @@ foreach ($query as $tile) {
    $result['map'][(int)$tile[1]][(int)$tile[0]]['units'] = [];
 }
 
+// Getting the resources
 $query = $db->execute('SELECT x, y, type FROM resources WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
    $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'][] = $tile[2];
 }
 
-// Then the improvements
-$query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
+// Getting the improvements
+$query = $db->execute('SELECT x, y, type, quantity FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
-   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = $improvement[2];
+   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = ['type' => $improvement[2], 'quantity' => (double)$improvement[3]];
 }
 
-// Finally the units
+// Getting the units
 $query = $db->execute('SELECT unit.id, unit.x, unit.y, unit.player_id, unit.action FROM units unit INNER JOIN players player ON (player.id = unit.player_id) WHERE player.game_id = ?', 'i', $gameId);
 foreach ($query as $unit) {
    $result['map'][(int)$unit[2]][(int)$unit[1]]['units'][] = ['id' => $unit[0], 'player_id' => $unit[3], 'action' => $unit[4]];
 }
 
+// Send all data
 send_result($result);
 ?>
