@@ -3,7 +3,7 @@ require 'init.php';
 
 // Check if the user is still logged in
 if (isset($_SESSION['user_id'])) {
-   send_result(true);
+   send_result($_SESSION['game_id'] ?: 0);
 }
 
 // Check if a token cookie is set
