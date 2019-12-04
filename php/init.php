@@ -73,27 +73,20 @@ function send_result($result, $code = 200) {
 }
 
 /**
- * Destroys the session and token and returns 401
+ * Destroys the session and token
  */
 function logoff() {
 
-   // Delete the existing token from the database
+   // Delete the existing token
    if (isset($_COOKIE['token'])) {
       $db->execute('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
+      setcookie('token', null, $timestamp - 42000, '/');
    }
 
-   // Remove all session variables
+   // Terminate the session
    $_SESSION = [];
-
-   // Delete the session and token cookies
    setcookie(session_name(), null, $timestamp - 42000, '/');
-   setcookie('token', null, $timestamp - 42000, '/');
-
-   // End the session
    session_destroy();
-
-   // Send response
-   send_result('Logged off', 401);
 }
 
 /**
@@ -101,9 +94,9 @@ function logoff() {
  * @return string A string with 64 random characters
  */
 function generate_token() {
-   $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY1Z234567890';
-   $pass = [];
+   $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
    $max = strlen($alphabet) - 1;
+   $pass = [];
    for ($character = 0; $character < 64; $character++) {
       $random = rand(0, $max);
       $pass[] = $alphabet[$random];

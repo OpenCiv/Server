@@ -21,6 +21,7 @@ if (!isset($_SESSION['user_id'])) {
 
    // Check if the token is found...
    if (empty($query)) {
+      setcookie('token', null, $timestamp - 42000, '/');
       send_result('Token not found', 401);
    }
 
@@ -30,6 +31,7 @@ if (!isset($_SESSION['user_id'])) {
    // Check if the token from the same user agent (browser, OS) and is not outdated
    $tokenTime = strtotime($query[0][0]);
    if ($query[0][2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $timestamp - 31622400) {
+      setcookie('token', null, $timestamp - 42000, '/');
       send_result('Invalid token', 401);
    }
 
@@ -37,7 +39,7 @@ if (!isset($_SESSION['user_id'])) {
    $_SESSION['user_id'] = (int)$query[0][1];
    $query = $db->execute('SELECT `verified` FROM `users` WHERE `id` = ?', 'i', $_SESSION['user_id']);
    if (empty($query)) {
-      unset($_SESSION['user_id']);
+      logoff();
       send_result('User not found', 401);
    }
 
