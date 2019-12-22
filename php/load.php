@@ -3,7 +3,7 @@ require 'verify.php';
 
 // Getting game details
 $query = $db->execute('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);
-if (empty($query)) {
+if (!$query) {
    send_result('Game not found', 400);
 }
 
@@ -27,7 +27,7 @@ foreach ($query as $player) {
 // Getting the map
 $result['map'] = [];
 
-// Note that the y-coordinate comes before the x-coordinate for CSS reasons
+/* Note that the y-coordinate comes before the x-coordinate for CSS reasons */
 
 // Getting the terrain
 $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
@@ -39,15 +39,15 @@ foreach ($query as $tile) {
 }
 
 // Getting the resources
-$query = $db->execute('SELECT x, y, type, quantity FROM resources WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, x, y, type, quantity FROM resources WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'][] = ['type' => $tile[2], 'quantity' => (double)$tile[3]];
+   $result['map'][(int)$tile[2]][(int)$tile[1]]['resources'][] = ['id' => (int)$tile[0], 'type' => $tile[3], 'quantity' => (double)$tile[4]];
 }
 
 // Getting the improvements
-$query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
-   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = $improvement[2];
+   $result['map'][(int)$improvement[2]][(int)$improvement[1]]['improvements'][] = ['id' => (int)$improvement[0], 'type' => $improvement[3]];
 }
 
 // Getting the units

@@ -25,25 +25,6 @@ CREATE TABLE games (
    PRIMARY KEY(id)
 );
 
-CREATE TABLE terrain (
-   game_id INT NOT NULL,
-   x SMALLINT NOT NULL,
-   y SMALLINT NOT NULL,
-   type VARCHAR(20) NOT NULL,
-   PRIMARY KEY(game_id, x, y),
-   CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
-);
-
-CREATE TABLE resources (
-   game_id INT NOT NULL,
-   x SMALLINT NOT NULL,
-   y SMALLINT NOT NULL,
-   type VARCHAR(20) NOT NULL,
-   quantity FLOAT NOT NULL,
-   PRIMARY KEY(game_id, x, y),
-   CONSTRAINT fk_resource_game FOREIGN KEY (game_id) REFERENCES games(id)
-);
-
 CREATE TABLE players (
    id INT NOT NULL AUTO_INCREMENT,
    user_id INT NOT NULL,
@@ -54,6 +35,38 @@ CREATE TABLE players (
    CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
+CREATE TABLE terrain (
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   PRIMARY KEY(game_id, x, y),
+   CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
+CREATE TABLE resources (
+   id INT NOT NULL AUTO_INCREMENT,
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   quantity FLOAT NOT NULL,
+   PRIMARY KEY(id),
+   INDEX(game_id, x, y),
+   CONSTRAINT fk_resource_game FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
+CREATE TABLE improvements (
+   id INT NOT NULL AUTO_INCREMENT,
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   PRIMARY KEY(id),
+   INDEX(game_id, x, y),
+   CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
 CREATE TABLE units (
    id INT NOT NULL AUTO_INCREMENT,
    player_id INT NOT NULL,
@@ -61,16 +74,9 @@ CREATE TABLE units (
    y SMALLINT NOT NULL,
    action VARCHAR(20) NULL,
    PRIMARY KEY(id),
+   INDEX(player_id),
+   INDEX(x, y),
    CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
-);
-
-CREATE TABLE improvements (
-   game_id INT NOT NULL,
-   x SMALLINT NOT NULL,
-   y SMALLINT NOT NULL,
-   type VARCHAR(20) NOT NULL,
-   PRIMARY KEY(game_id, x, y),
-   CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
 INSERT INTO games (name, x, y) VALUES ('dummy', 10, 10), ('alpha', 10, 10);

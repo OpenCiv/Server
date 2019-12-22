@@ -8,48 +8,9 @@ $playerId = 1;
 $playerName = 'Knut';
 return;
 
-// Check if a session exists
-if (!isset($_SESSION['user_id'])) {
-
-   // The session may have expired
-   if (!isset($_COOKIE['token'])) {
-      send_result('Not logged in', 401);
-   }
-
-   // Find the token
-   $query = $db->execute('SELECT `timestamp`, `user_id`, `user_agent` FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
-
-   // Check if the token is found...
-   if (empty($query)) {
-      setcookie('token', null, $timestamp - 42000, '/');
-      send_result('Token not found', 401);
-   }
-
-   // ...and delete it
-   $db->execute('DELETE FROM `tokens` WHERE `value` = ?', 's', $_COOKIE['token']);
-
-   // Check if the token from the same user agent (browser, OS) and is not outdated
-   $tokenTime = strtotime($query[0][0]);
-   if ($query[0][2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $timestamp - 31622400) {
-      setcookie('token', null, $timestamp - 42000, '/');
-      send_result('Invalid token', 401);
-   }
-
-   // Set the main session variable
-   $_SESSION['user_id'] = (int)$query[0][1];
-   $query = $db->execute('SELECT `verified` FROM `users` WHERE `id` = ?', 'i', $_SESSION['user_id']);
-   if (empty($query)) {
-      logoff();
-      send_result('User not found', 401);
-   }
-
-   // Check if the user is verified
-   if (!$query[0][0]) {
-      send_result('User not verified', 403);
-   }
+if (!verify_user_id($userId)) {
+   send_result('User not verified', 403);
 }
-
-$userId = &$_SESSION['user_id'];
 
 // Check the game
 if (!$_SESSION['game_id']) {
