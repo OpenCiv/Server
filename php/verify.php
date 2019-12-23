@@ -1,13 +1,6 @@
 <?php
 require 'init.php';
 
-// Circumventing verification
-$gameId = 1;
-$userId = 1;
-$playerId = 1;
-$playerName = 'Knut';
-return;
-
 if (!verify_user_id($userId)) {
    send_result('User not verified', 403);
 }
