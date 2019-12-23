@@ -35,6 +35,10 @@ class database extends mysqli {
       }
 
       $statement->execute();
+      if ($statement->error) {
+         send_result($statement->error, 500);
+      }
+
       $result = $statement->get_result();
 
       // The result is a boolean in case of an INSERT, UPDATE or DELETE query
@@ -61,9 +65,9 @@ class database extends mysqli {
     * @return any The first result of the query
     */
    function first($query, $types = null, ...$parameters) {
-      $data = $this->execute($query, $types = null, ...$parameters);
+      $data = $this->execute($query, $types, ...$parameters);
       if (gettype($data) !== 'array') {
-         send_result("Method 'first' failed for query: " . $query, 500);
+         send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
       }
 
       return count($data) > 0 ? $data[0] : null;
@@ -140,7 +144,7 @@ function send_verification_email($userId, $email, $name) {
       settings::$origin . "/verify?token=$token" . PHP_EOL . PHP_EOL .
       'Kind regards,' . PHP_EOL .
       'The Open Civ team';
-   $header = 'From: Open Civ <webmaster@openciv.com>' . PHP_EOL .
+   $header = 'From: Open Civ <gamemaster@openciv.com>' . PHP_EOL .
       'Content-Type: text/plain;charset=utf-8' . PHP_EOL .
       'X-Mailer: PHP/' . phpversion();
    if (!mail($to, $subject, $body, $headers)) {
