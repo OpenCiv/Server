@@ -114,7 +114,7 @@ function verify_user_id(&$userId) {
  * @param userId The user's ID
  * @param email The user's e-mail address
  */
-function send_verification_email($userId, $name, $email) {
+function send_verification_email($userId, $email, $name) {
    $token = generate_token();
    $db->execute("INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, 'verify')", 'is', $userId, $token);
    $to = "$name <$email>";

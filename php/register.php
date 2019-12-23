@@ -24,7 +24,7 @@ $token = generate_token();
 $db->execute('INSERT INTO tokens (value, user_id, user_agent) VALUES (?, ?, ?)', 'sis', $token, $userId, $_SERVER['HTTP_USER_AGENT']);
 setcookie('token', $token, $_SERVER['REQUEST_TIME'] + 31622400, '/');
 
-send_verification_email($userId, $params->name, $params->email);
+send_verification_email($userId, $params->email, $params->name);
 
 // Report success
 send_result(false);

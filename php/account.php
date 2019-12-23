@@ -1,20 +1,19 @@
 <?php
 require 'init.php';
-set_user_id($userId);
+verify_user_id($userId);
 if (!$params || !$params->request || !$userId) {
    send_result(false, 400);
 }
 
 switch ($params->request) {
    case 'getuser':
-      $query = $db->execute('SELECT name, email, verified FROM users WHERE id = ?', 'i', $userId);
-      $user = ['name' => $query[0][0], 'email' => $query[0][1], 'verified' => (bool)$query[0][2]];
+      $query = $db->execute('SELECT email, name, verified FROM users WHERE id = ?', 'i', $userId);
+      $user = ['email' => $query[0][0], 'name' => $query[0][1], 'verified' => (bool)$query[0][2]];
       send_result($user);
 
    case 'resend':
-      $token = generate_token();
-      $db->execute('INSERT INTO tokens (value, user_id, user_agent) VALUES (?, ?, ?)', $userId, $token, 'verify');
-      $query = $db->execute('SELECT email FROM users WHERE id = ?', 'i', $userId);
+      $query = $db->execute('SELECT email, name FROM users WHERE id = ?', 'i', $userId);
+      send_verification_email($userId, $query[0][0], $query[0][1]);
       send_result(true);
 
    case 'getgames':
