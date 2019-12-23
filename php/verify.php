@@ -5,6 +5,12 @@ if (!verify_user_id($userId)) {
    send_result('User not verified', 403);
 }
 
+// Circumventing verification
+$gameId = 1;
+$playerId = 1;
+$playerName = 'Knut';
+return;
+
 // Check the game
 if (!$_SESSION['game_id']) {
 
