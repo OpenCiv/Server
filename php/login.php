@@ -2,17 +2,8 @@
 require 'init.php';
 
 // A login attempt should come as a post method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-   send_result('Incorrect request method', 405);
-}
-
-// Check if parameters are not empty
-if (empty($params->username)) {
-   send_result('E-mail address missing', 400);
-}
-
-if (empty($params->password)) {
-   send_result('Password missing', 400);
+if (!$params || !$params->username || !$params->password) {
+   send_result('Parameter missing', 400);
 }
 
 // Check if the user exists
