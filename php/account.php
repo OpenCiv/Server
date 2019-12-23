@@ -11,6 +11,15 @@ switch ($params->request) {
       $user = ['email' => $query[0], 'name' => $query[1], 'verified' => (bool)$query[2]];
       send_result($user);
 
+   case 'changepassword':
+      $query = $db->first('SELECT password FROM users WHERE id = ?', 'i', $userId);
+      if (!password_verify($params->oldpass, $query[0])) {
+         send_result(false);
+      }
+
+      $db->execute('UPDATE users SET password = ? WHERE id = ?', 'si', password_hash($params->newpass, PASSWORD_BCRYPT), $userId);
+      send_result(true);
+
    case 'resend':
       $query = $db->first('SELECT email, name FROM users WHERE id = ?', 'i', $userId);
       send_verification_email($userId, $query[0], $query[1]);
