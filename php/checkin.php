@@ -12,7 +12,7 @@ if (!isset($_COOKIE['token'])) {
 }
 
 // Find the token...
-$query = $db->execute('SELECT timestamp, user_id, user_agent FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
+$query = $db->first('SELECT timestamp, user_id, user_agent FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
 if (!$query) {
    send_result(false);
 }
@@ -21,13 +21,13 @@ if (!$query) {
 $db->execute('DELETE FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
 
 // Check if the token from the same user agent (browser, OS) and is not outdated
-$tokenTime = strtotime($query[0][0]);
-if ($query[0][2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $_SERVER['REQUEST_TIME'] - 31622400) {
+$tokenTime = strtotime($query[0]);
+if ($query[2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $_SERVER['REQUEST_TIME'] - 31622400) {
    send_result(false);
 }
 
 // Set the main session variable
-$_SESSION['user_id'] = (int)$query[0][1];
+$_SESSION['user_id'] = (int)$query[1];
 
 // Create a new token
 $token = generate_token();

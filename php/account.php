@@ -7,13 +7,13 @@ if (!$params || !$params->request || !$userId) {
 
 switch ($params->request) {
    case 'getuser':
-      $query = $db->execute('SELECT email, name, verified FROM users WHERE id = ?', 'i', $userId);
-      $user = ['email' => $query[0][0], 'name' => $query[0][1], 'verified' => (bool)$query[0][2]];
+      $query = $db->first('SELECT email, name, verified FROM users WHERE id = ?', 'i', $userId);
+      $user = ['email' => $query[0], 'name' => $query[1], 'verified' => (bool)$query[2]];
       send_result($user);
 
    case 'resend':
-      $query = $db->execute('SELECT email, name FROM users WHERE id = ?', 'i', $userId);
-      send_verification_email($userId, $query[0][0], $query[0][1]);
+      $query = $db->first('SELECT email, name FROM users WHERE id = ?', 'i', $userId);
+      send_verification_email($userId, $query[0], $query[1]);
       send_result(true);
 
    case 'getgames':

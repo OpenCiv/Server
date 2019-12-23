@@ -16,15 +16,15 @@ if (empty($params->password)) {
 }
 
 // Check if the user exists
-$query = $db->execute('SELECT id, password FROM users WHERE email = ?', 's', $params->username);
-if (empty($query)) {
+$query = $db->first('SELECT id, password FROM users WHERE email = ?', 's', $params->username);
+if (!$query) {
    send_result('E-mail address not found');
 }
 
-$userId = (int)$query[0][0];
+$userId = (int)$query[0];
 
 // Check password
-if (!password_verify($params->password, $query[0][1])) {
+if (!password_verify($params->password, $query[1])) {
    send_result('Password incorrect');
 }
 

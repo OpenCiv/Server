@@ -7,12 +7,12 @@ if (!$params->token) {
 }
 
 // Find the token...
-$query = $db->execute('SELECT user_id FROM tokens WHERE value = ?', 's', $params->token);
+$query = $db->first('SELECT user_id FROM tokens WHERE value = ?', 's', $params->token);
 if (empty($query)) {
    send_result(false, 400);
 }
 
-$userId = (int)$query[0][0];
+$userId = (int)$query[0];
 
 // ...and delete it
 $db->execute('DELETE FROM tokens WHERE value = ?', 's', $params->token);

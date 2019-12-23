@@ -5,8 +5,8 @@ if (!$params || !$params->name || !$params->email || !$params->password) {
 }
 
 // Check if the e-mail address is not in use already
-$query = $db->execute('SELECT EXISTS (SELECT * FROM users WHERE email = ?)', 's', $params->email);
-if ($query[0][0] == true) {
+$query = $db->first('SELECT EXISTS (SELECT * FROM users WHERE email = ?)', 's', $params->email);
+if ($query[0]) {
    send_result('E-mail address already in use');
 }
 

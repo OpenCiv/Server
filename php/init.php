@@ -52,6 +52,22 @@ class database extends mysqli {
       $statement->close();
       return $data;
    }
+
+   /**
+    * Returns the first result of a SELECT query, or null if there was none
+    * @param query The SQL query
+    * @param types The first argument of mysqli_stmt::bind_params
+    * @param parameters The other arguments of mysqli_stmt::bind_params
+    * @return any The first result of the query
+    */
+   function first($query, $types = null, ...$parameters) {
+      $data = $this->execute($query, $types = null, ...$parameters);
+      if (gettype($data) !== 'array') {
+         send_result("Method 'first' failed for query: " . $query, 500);
+      }
+
+      return count($data) > 0 ? $data[0] : null;
+   }
 }
 
 /**
@@ -73,7 +89,7 @@ function verify_user_id(&$userId) {
    }
 
    // Find the token
-   $query = $db->execute('SELECT timestamp, user_id, user_agent FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
+   $query = $db->first('SELECT timestamp, user_id, user_agent FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
 
    // Check if the token is found...
    if (!$query) {
@@ -85,13 +101,13 @@ function verify_user_id(&$userId) {
    $db->execute('DELETE FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
 
    // Check if the token from the same user agent (browser, OS) and is not outdated
-   $tokenTime = strtotime($query[0][0]);
-   if ($query[0][2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $_SERVER['REQUEST_TIME'] - 31622400) {
+   $tokenTime = strtotime($query[0]);
+   if ($query[2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $_SERVER['REQUEST_TIME'] - 31622400) {
       setcookie('token', null, $_SERVER['REQUEST_TIME'] - 42000, '/');
       send_result('Invalid token', 401);
    }
 
-   $userId = (int)$query[0][1];
+   $userId = (int)$query[1];
    $query = $db->execute('SELECT verified FROM users WHERE id = ?', 'i', $_SESSION['user_id']);
    if (!$query) {
       logoff();

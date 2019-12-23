@@ -2,14 +2,14 @@
 require 'verify.php';
 
 // Getting game details
-$query = $db->execute('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);
+$query = $db->first('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);
 if (!$query) {
    send_result('Game not found', 400);
 }
 
-$result['game']['name'] = $query[0][0];
-$result['game']['x'] = (int)$query[0][1];
-$result['game']['y'] = (int)$query[0][2];
+$result['game']['name'] = $query[0];
+$result['game']['x'] = (int)$query[1];
+$result['game']['y'] = (int)$query[2];
 
 $query = $db->execute('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
 
