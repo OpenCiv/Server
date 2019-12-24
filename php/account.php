@@ -6,11 +6,14 @@ if (!$params || !$params->request || !$userId) {
 }
 
 switch ($params->request) {
+
+   // Returns the user
    case 'getuser':
       $query = $db->first('SELECT email, name, verified FROM users WHERE id = ?', 'i', $userId);
       $user = ['email' => $query[0], 'name' => $query[1], 'verified' => (bool)$query[2]];
       send_result($user);
 
+   // Verifies the old password and replaces it with a new password the user has inputted
    case 'changepassword':
       $query = $db->first('SELECT password FROM users WHERE id = ?', 'i', $userId);
       if (!password_verify($params->oldpass, $query[0])) {
@@ -18,6 +21,20 @@ switch ($params->request) {
       }
 
       $db->execute('UPDATE users SET password = ? WHERE id = ?', 'si', password_hash($params->newpass, PASSWORD_BCRYPT), $userId);
+      send_result(true);
+
+   // Replaces the user's password with eight random characters and sends it by e-mail
+   case 'newpassword':
+      $password = substr(generate_token(), 0, 8);
+      $db->execute('UPDATE users SET password = ? WHERE id = ?', 'si', password_hash($password, PASSWORD_BCRYPT), $userId);
+      $query = $db->first('SELECT email, name FROM users WHERE id = ?', 'i', $userId);
+      $email = $query[0];
+      $name = $query[1];
+      $body = "Hello $name," . PHP_EOL . PHP_EOL .
+      'As requested, here is your new password: ' . $password . PHP_EOL . PHP_EOL .
+      'Kind regards,' . PHP_EOL .
+      'The Open Civ team';
+      send_mail($email, $name, 'Open Civ: new password');
       send_result(true);
 
    case 'resend':

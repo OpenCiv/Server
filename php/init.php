@@ -30,7 +30,7 @@ class database extends mysqli {
       }
 
       // Check if the query requires parameters to be bound
-      if (!$types) {
+      if ($types) {
          $statement->bind_param($types, ...$parameters);
       }
 
@@ -139,22 +139,34 @@ function verify_user_id(&$userId) {
  * @param email The user's e-mail address
  */
 function send_verification_email($userId, $email, $name) {
+   global $db;
+
    $token = generate_token();
-   $db->execute("INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, 'verify')", 'is', $userId, $token);
-   $to = "$name <$email>";
-   $subject = 'OpenCiv: verification';
+   $db->execute("INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)", 'iss', $userId, $token, 'verify');
    $body = "Hello $name," . PHP_EOL . PHP_EOL .
       'Please follow this link to verify your account:' . PHP_EOL .
-      settings::$origin . "/verify?token=$token" . PHP_EOL . PHP_EOL .
+      settings::$origin . "/account?token=$token" . PHP_EOL . PHP_EOL .
       'Kind regards,' . PHP_EOL .
       'The Open Civ team';
-   $header = 'From: Open Civ <gamemaster@openciv.com>' . PHP_EOL .
-      'Content-Type: text/plain;charset=utf-8' . PHP_EOL .
-      'X-Mailer: PHP/' . phpversion();
-   if (!mail($to, $subject, $body, $headers)) {
+   if (!send_mail($email, $name, 'OpenCiv: verification', $body)) {
       $db->execute("DELETE FROM tokens WHERE value = ?", 's', $token);
       throw new Exception('Cannot send e-mail');
    }
+}
+
+/**
+ * Send an e-mail and returns whether it succeeded
+ * @param email The e-mail is sent to this e-mail address
+ * @param name The name of the receiver
+ * @param subject The title of the e-mail
+ * @param body The content of the e-mail
+ * @return boolean A value indicating whether the e-mail was sent successfully
+ */
+function send_mail($email, $name, $subject, $body) {
+   $headers = 'From: Open Civ <noreply@openciv.eu>' . PHP_EOL .
+      'Content-Type: text/plain;charset=utf-8' . PHP_EOL .
+      'X-Mailer: PHP/' . phpversion();
+   return mail("$name <$email>", $subject, $body, $headers);
 }
 
 /**
