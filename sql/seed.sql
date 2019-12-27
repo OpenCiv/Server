@@ -61,13 +61,12 @@ CREATE TABLE terrain (
 );
 
 CREATE TABLE resources (
-   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    game_id INT NOT NULL,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
    quantity FLOAT NOT NULL,
-   INDEX(game_id, x, y),
+   PRIMARY KEY(game_id, x, y),
    CONSTRAINT fk_resource_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
@@ -90,6 +89,17 @@ CREATE TABLE units (
    INDEX(player_id),
    INDEX(x, y),
    CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
+);
+
+CREATE TABLE equipment (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   unit_id INT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   INDEX(unit_id),
+   INDEX(x, y),
+   CONSTRAINT fk_equipment_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 
 INSERT INTO games (name, x, y) VALUES ('dummy', 10, 10), ('alpha', 10, 10);

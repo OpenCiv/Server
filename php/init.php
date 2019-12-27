@@ -75,31 +75,24 @@ class database extends mysqli {
 }
 
 /**
- * Set the user's ID and returns a value indicating whether the user is verified
- * @param userId The user's ID his set to this parameter
- * @return bool True if the user is verified, otherwise false
+ * Set the user ID session and returns it
+ * @return int The user's ID
  */
-function verify_user_id(&$userId) {
+function get_user() {
    global $db;
 
-   // Circumventing verification
-   $userId = 1;
-   return true;
-   
    // Check if a session exists
-   if ($_SESSION['user_id']) {
-      $userId = $_SESSION['user_id'];
+   if (isset($_SESSION['user_id'])) {
+      return $_SESSION['user_id'];
    }
 
-   // The session may have expired
-   if (!$_COOKIE['token']) {
+   // Check for a cookie token if no sessions is active
+   if (!isset($_COOKIE['token'])) {
       send_result('Not logged in', 401);
    }
 
-   // Find the token
-   $query = $db->first('SELECT timestamp, user_id, user_agent FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
-
-   // Check if the token is found...
+   // Find the token...
+   $query = $db->first('SELECT user_id, timestamp, user_agent, ip_address FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
    if (!$query) {
       setcookie('token', null, $_SERVER['REQUEST_TIME'] - 42000, '/');
       send_result('Token not found', 401);
@@ -108,29 +101,90 @@ function verify_user_id(&$userId) {
    // ...and delete it
    $db->execute('DELETE FROM tokens WHERE value = ?', 's', $_COOKIE['token']);
 
-   // Check if the token from the same user agent (browser, OS) and is not outdated
-   $tokenTime = strtotime($query[0]);
-   if ($query[2] !== $_SERVER['HTTP_USER_AGENT'] || $tokenTime < $_SERVER['REQUEST_TIME'] - 31622400) {
+   // Check if the token from the same user agent and IP address and is not outdated
+   $tokenTime = strtotime($query[1]);
+   if ($tokenTime < $_SERVER['REQUEST_TIME'] - 31622400 ||
+      $query[2] !== $_SERVER['HTTP_USER_AGENT'] ||
+      $query[3] !== $_SERVER['REMOTE_ADDR']
+   ) {
       setcookie('token', null, $_SERVER['REQUEST_TIME'] - 42000, '/');
       send_result('Invalid token', 401);
    }
 
-   $userId = (int)$query[1];
-   $query = $db->execute('SELECT verified FROM users WHERE id = ?', 'i', $_SESSION['user_id']);
-   if (!$query) {
+   // Check if the user exists and is verified
+   $userId = (int)$query[0];
+   $query = $db->first('SELECT verified FROM users WHERE id = ?', 'i', $userId);
+   if (count($query) === 0) {
       logoff();
       send_result('User not found', 401);
    }
 
-   $token = generate_token();
-   $db->execute('INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)', 'iss', $userId, $token, $_SERVER['HTTP_USER_AGENT']);
-   setcookie('token', $token, $_SERVER['REQUEST_TIME'] + 31622400, '/');
-
    // Set the main session variable
    $_SESSION['user_id'] = $userId;
+   $_SESSION['verified'] = (bool)$query[0];
 
-   // Return whether the user is verified
-   return (bool)$query[0][0];
+   // Generate a new token
+   set_token();
+
+   // Return the user's ID
+   return $userId;
+}
+
+/**
+ * Sets session variables and returns the ID of the game the user is in or intends to enter
+ * @return int The game ID
+ */
+function get_game() {
+   global $db;
+   global $params;
+
+   // Check the game
+   if (!$_SESSION['game_id']) {
+
+      // Check if the game ID is passed as a parameter
+      if (!$params->game) {
+         send_result('No game set', 403);
+      }
+
+      // Check if the game exists
+      $query = $db->first('SELECT EXISTS (SELECT * FROM games WHERE id = ?)', 'i', $params->game);
+      if (!$query[0]) {
+         send_result('Game not found', 403);
+      }
+
+      $_SESSION['game_id'] = $params->game;
+   }
+
+   // Retrieve the player ID
+   if (!$_SESSION['player_id']) {
+      $query = $db->first('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $_SESSION['game_id'], $_SESSION['user_id']);
+      if (!$query) {
+         send_result('Not a player in this game', 403);
+      }
+
+      $_SESSION['player_id'] = (int)$query[0];
+   }
+
+   // Return the game's ID
+   return $_SESSION['game_id'];
+}
+
+/**
+ * Creates a new token and stores is as cookie and in the database
+ */
+function set_token() {
+   global $db;
+
+   $token = generate_token();
+   $db->execute(
+      'INSERT INTO tokens (user_id, value, user_agent, ip_address) VALUES (?, ?, ?, ?)',
+      'isss',
+      $_SESSION['user_id'],
+      $token,
+      $_SERVER['HTTP_USER_AGENT'],
+      $_SERVER['REMOTE_ADDR']
+   );
+   setcookie('token', $token, $_SERVER['REQUEST_TIME'] + 31622400, '/');
 }
 
 /**

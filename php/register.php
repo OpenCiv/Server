@@ -18,12 +18,7 @@ $db->execute('INSERT INTO users (name, email, password, verified) VALUES (?, ?, 
 $query = $db->execute('SELECT LAST_INSERT_ID()');
 $userId = (int)$query[0][0];
 $_SESSION['user_id'] = $userId;
-
-// Create a new token
-$token = generate_token();
-$db->execute('INSERT INTO tokens (value, user_id, user_agent) VALUES (?, ?, ?)', 'sis', $token, $userId, $_SERVER['HTTP_USER_AGENT']);
-setcookie('token', $token, $_SERVER['REQUEST_TIME'] + 31622400, '/');
-
+set_token();
 send_verification_email($userId, $params->email, $params->name);
 
 // Report success

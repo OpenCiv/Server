@@ -1,5 +1,8 @@
 <?php
-require 'verify.php';
+require 'init.php';
+$userId = get_user();
+$gameId = get_game();
+$playerId = $_SESSION['player_id'];
 
 // Getting game details
 $query = $db->first('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);
@@ -45,9 +48,9 @@ foreach ($query as $tile) {
 }
 
 // Getting the improvements
-$query = $db->execute('SELECT id, x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
-   $result['map'][(int)$improvement[2]][(int)$improvement[1]]['improvements'][] = ['id' => (int)$improvement[0], 'type' => $improvement[3]];
+   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = ['type' => $improvement[2]];
 }
 
 // Getting the units
