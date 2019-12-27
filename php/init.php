@@ -103,10 +103,7 @@ function get_user() {
 
    // Check if the token from the same user agent and IP address and is not outdated
    $tokenTime = strtotime($query[1]);
-   if ($tokenTime < $_SERVER['REQUEST_TIME'] - 31622400 ||
-      $query[2] !== $_SERVER['HTTP_USER_AGENT'] ||
-      $query[3] !== $_SERVER['REMOTE_ADDR']
-   ) {
+   if ($tokenTime < $_SERVER['REQUEST_TIME'] - 31622400 || $query[2] !== $_SERVER['HTTP_USER_AGENT']) {
       setcookie('token', null, $_SERVER['REQUEST_TIME'] - 42000, '/');
       send_result('Invalid token', 401);
    }
@@ -230,6 +227,7 @@ function send_mail($email, $name, $subject, $body) {
  */
 function send_result($result, $code = 200) {
    global $db;
+
    $db->close();
 
    if ($code !== 200) {
@@ -246,6 +244,8 @@ function send_result($result, $code = 200) {
  * Destroys the session and token
  */
 function logoff() {
+   global $db;
+
 
    // Delete the existing token
    if (isset($_COOKIE['token'])) {
