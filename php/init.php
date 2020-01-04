@@ -156,7 +156,10 @@ function get_game() {
    }
 
    // Retrieve the player ID
-   if (!$_SESSION['player_id']) {
+   if ($_SESSION['game_id'] === 1) {
+      $_SESSION['player_id'] = 1;
+   }
+   elseif (!$_SESSION['player_id']) {
       $query = $db->first('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $_SESSION['game_id'], $_SESSION['user_id']);
       if (!$query) {
          send_result('Not a player in this game', 403);
@@ -232,7 +235,6 @@ function send_result($result, $code = 200) {
    global $db;
 
    $db->close();
-
    if ($code !== 200) {
       http_response_code($code);
    }
@@ -248,7 +250,6 @@ function send_result($result, $code = 200) {
  */
 function logoff() {
    global $db;
-
 
    // Delete the existing token
    if (isset($_COOKIE['token'])) {
