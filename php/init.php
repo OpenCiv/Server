@@ -65,6 +65,7 @@ class database extends mysqli {
     * @return any The first result of the query
     */
    function first($query, $types = null, ...$parameters) {
+      $query .= ' LIMIT 1';
       $data = $this->execute($query, $types, ...$parameters);
       if (gettype($data) !== 'array') {
          send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
