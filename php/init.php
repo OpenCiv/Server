@@ -7,6 +7,20 @@ require 'settings.php';
  * A preset mysqli extension
  */
 class database extends mysqli {
+
+   /**
+    * The parameters are bound to transaction executions
+    */
+   private $transaction_parameters = [];
+
+   /**
+    * The statement is saved for transactions
+    */
+   private $transaction_statement;
+
+   /**
+    * Initializes a new instance of the database class
+    */
    function __construct() {
       parent::__construct(settings::$dbhost, settings::$dbuser, settings::$dbpass, settings::$dbname);
       if ($this->connect_error) {
@@ -71,7 +85,68 @@ class database extends mysqli {
          send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
       }
 
-      return count($data) > 0 ? $data[0] : null;
+      return count($data) === 1 ? $data[0] : null;
+   }
+
+   /**
+    * Prepares a batch of transactions
+    * @param query The SQL query
+    * @param types The first argument of mysqli_stmt::bind_params
+    */
+   function begin_transaction($query, $types) {
+      parent::begin_transaction();
+      $this->transaction_statement = $this->prepare($query);
+      if (!$this->transaction_statement) {
+         send_result('Query failed: ' . $query, 500);
+      }
+
+      $this->transaction_statement->bind_param($types, ...$this->transaction_parameters);
+   }
+
+   /**
+    * Adds a SQL statement for later execution
+    * @param parameters An array containing the SQL binding values
+    */
+   function add_transaction($parameters) {
+      $this->transaction_parameters = $parameters;
+      if (!$this->transaction_statement->execute()) {
+         $db->rollback();
+         send_result('Query failed: ' . $query, 500);
+      }
+   }
+
+   /**
+    * Commits the transactions
+    */
+   function commit_transaction() {
+      $this->transaction_statement->close();
+      $this->commit();
+      $this->transaction_parameters = [];
+   }
+
+   /**
+    * Executes a transaction on the database
+    * @param query The SQL query
+    * @param types The first argument of mysqli_stmt::bind_params
+    * @param array An array of arrays containing the SQL binding values
+    */
+   function transaction($query, $types = null, $array) {
+      $this->begin_transaction();
+      $statement = $this->prepare($query);
+      if (!$statement) {
+         send_result('Query failed: ' . $query, 500);
+      }
+
+      $statement->bind_param($types, ...$parameters);
+      foreach ($array as $parameters) {
+         if (!$statement->execute()) {
+            $db->rollback();
+            send_result('Query failed: ' . $query, 500);
+         }
+      }
+
+      $statement->close();
+      $this->commit();
    }
 }
 
@@ -222,23 +297,19 @@ function send_mail($email, $name, $subject, $body) {
 }
 
 /**
- * The function returns results to the client
- * @param result The parameter will be encoded into JSON and sent back to the client
- * @param code The HTTP status code
+ * Returns a token string
+ * @return string A string with 64 random characters
  */
-function send_result($result, $code = 200) {
-   global $db;
-
-   $db->close();
-
-   if ($code !== 200) {
-      http_response_code($code);
+function generate_token() {
+   $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+   $max = strlen($alphabet) - 1;
+   $pass = [];
+   for ($character = 0; $character < 64; $character++) {
+      $random = rand(0, $max);
+      $pass[] = $alphabet[$random];
    }
 
-   header('Access-Control-Allow-Origin: ' . settings::$origin);
-   header('Content-Type: application/json');
-   echo json_encode($result);
-   exit;
+   return implode($pass);
 }
 
 /**
@@ -261,19 +332,23 @@ function logoff() {
 }
 
 /**
- * Returns a token string
- * @return string A string with 64 random characters
+ * The function returns results to the client
+ * @param result The parameter will be encoded into JSON and sent back to the client
+ * @param code The HTTP status code
  */
-function generate_token() {
-   $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-   $max = strlen($alphabet) - 1;
-   $pass = [];
-   for ($character = 0; $character < 64; $character++) {
-      $random = rand(0, $max);
-      $pass[] = $alphabet[$random];
+function send_result($result, $code = 200) {
+   global $db;
+
+   $db->close();
+
+   if ($code !== 200) {
+      http_response_code($code);
    }
 
-   return implode($pass);
+   header('Access-Control-Allow-Origin: ' . settings::$origin);
+   header('Content-Type: application/json');
+   echo json_encode($result);
+   exit;
 }
 
 // Start a session, open the database, and obtain post parameters
