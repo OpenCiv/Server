@@ -35,28 +35,38 @@ $result['map'] = [];
 // Getting the terrain
 $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['type'] = $tile[2];
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['resources'] = [];
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['improvements'] = [];
-   $result['map'][(int)$tile[1]][(int)$tile[0]]['units'] = [];
+   $x = (int)$tile[0];
+   $y = (int)$tile[1];
+   $result['map'][$y][$x]['x'] = $x;
+   $result['map'][$y][$x]['y'] = $y;
+   $result['map'][$y][$x]['type'] = $tile[2];
+   $result['map'][$y][$x]['resources'] = [];
+   $result['map'][$y][$x]['improvements'] = [];
+   $result['map'][$y][$x]['units'] = [];
 }
 
 // Getting the resources
 $query = $db->execute('SELECT id, x, y, type, quantity FROM resources WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
-   $result['map'][(int)$tile[2]][(int)$tile[1]]['resources'][] = ['id' => (int)$tile[0], 'type' => $tile[3], 'quantity' => (double)$tile[4]];
+   $x = (int)$tile[1];
+   $y = (int)$tile[2];
+   $result['map'][$y][$x]['resources'][] = ['id' => (int)$tile[0], 'x' => $x, 'y' => $y, 'type' => $tile[3], 'quantity' => (double)$tile[4]];
 }
 
 // Getting the improvements
 $query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
-   $result['map'][(int)$improvement[1]][(int)$improvement[0]]['improvements'][] = ['type' => $improvement[2]];
+   $x = (int)$improvement[0];
+   $y = (int)$improvement[1];
+   $result['map'][$y][$x]['improvements'][] = ['type' => $improvement[2], 'x' => $x, 'y' => $y];
 }
 
 // Getting the units
 $query = $db->execute('SELECT unit.id, unit.x, unit.y, unit.player_id, unit.action FROM units unit INNER JOIN players player ON (player.id = unit.player_id) WHERE player.game_id = ?', 'i', $gameId);
 foreach ($query as $unit) {
-   $result['map'][(int)$unit[2]][(int)$unit[1]]['units'][] = ['id' => $unit[0], 'player_id' => $unit[3], 'action' => $unit[4]];
+   $x = (int)$unit[1];
+   $y = (int)$unit[2];
+   $result['map'][$y][$x]['units'][] = ['id' => $unit[0], 'x' => $x, 'y' => $y, 'player_id' => $unit[3], 'action' => $unit[4]];
 }
 
 // Send all data
