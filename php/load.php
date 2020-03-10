@@ -62,7 +62,7 @@ foreach ($query as $improvement) {
 }
 
 // Getting the units
-$query = $db->execute('SELECT unit.id, unit.x, unit.y, unit.player_id, unit.action FROM units unit INNER JOIN players player ON (player.id = unit.player_id) WHERE player.game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, x, y, player_id, action FROM units WHERE player_id = ?', 'i', $playerId);
 foreach ($query as $unit) {
    $x = (int)$unit[1];
    $y = (int)$unit[2];
