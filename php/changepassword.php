@@ -1,6 +1,6 @@
 <?php
 require 'init.php';
-$userId = get_user();
+get_user();
 if (!$params || !$params->oldpass || !$params->newpass) {
    send_result('Parameter missing', 400);
 }

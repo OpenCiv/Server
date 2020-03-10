@@ -151,18 +151,20 @@ class database extends mysqli {
 }
 
 /**
- * Set the user ID session and returns it
- * @return int The user's ID
+ * Sets the user ID
  */
 function get_user() {
    global $db;
+   global $userId;
 
    /* Circumventing actual verification... */
-   $_SESSION['user_id'] = 1;
+   $userId = 1;
+   return;
 
    // Check if a session exists
    if (isset($_SESSION['user_id'])) {
-      return $_SESSION['user_id'];
+      $userId = $_SESSION['user_id'];
+      return;
    }
 
    // Check for a cookie token if no sessions is active
@@ -201,18 +203,24 @@ function get_user() {
 
    // Generate a new token
    set_token();
-
-   // Return the user's ID
-   return $userId;
 }
 
 /**
- * Sets session variables and returns the ID of the game the user is in or intends to enter
- * @return int The game ID
+ * Sets the game and player ID's
  */
-function get_game() {
+function get_player() {
    global $db;
    global $params;
+   global $userId;
+   global $gameId;
+   global $playerId;
+
+   get_user();
+
+   /* Circumventing actual verification... */
+   $gameId = 1;
+   $playerId = 1;
+   return;
 
    // Check the game
    if (!$_SESSION['game_id']) {
@@ -232,11 +240,8 @@ function get_game() {
    }
 
    // Retrieve the player ID
-   if ($_SESSION['game_id'] === 1) {
-      $_SESSION['player_id'] = 1;
-   }
-   elseif (!$_SESSION['player_id']) {
-      $query = $db->first('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $_SESSION['game_id'], $_SESSION['user_id']);
+   if (!$_SESSION['player_id']) {
+      $query = $db->first('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $_SESSION['game_id'], $userId);
       if (!$query) {
          send_result('Not a player in this game', 403);
       }
@@ -244,8 +249,9 @@ function get_game() {
       $_SESSION['player_id'] = (int)$query[0];
    }
 
-   // Return the game's ID
-   return $_SESSION['game_id'];
+   // Set global variables
+   $gameId = $_SESSION['game_id'];
+   $playerId = $_SESSION['player_id'];
 }
 
 /**

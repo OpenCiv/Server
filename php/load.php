@@ -1,8 +1,6 @@
 <?php
 require 'init.php';
-$userId = get_user();
-$gameId = get_game();
-$playerId = $_SESSION['player_id'];
+get_player();
 
 // Getting game details
 $query = $db->first('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);

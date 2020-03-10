@@ -1,6 +1,5 @@
 <?php
 require 'init.php';
-get_user();
-$gameId = get_game();
+get_player();
 send_result($gameId);
 ?>

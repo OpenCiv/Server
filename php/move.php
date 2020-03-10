@@ -1,8 +1,6 @@
 <?php
 require 'init.php';
-$userId = 1;
-$gameId = 1;
-$playerId = 1;
+get_player();
 
 if (!$params || !$params->id || !$params->direction) {
    send_result('Parameter missing', 400);
