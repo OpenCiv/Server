@@ -4,7 +4,7 @@ if (!$params || !$params->email) {
    send_result('Parameter missing', 400);
 }
 
-$query = $db->first('SELECT id, name FROM users WHERE email = ?', 'i', $params->email);
+$query = $db->first('SELECT id, name FROM users WHERE email = ?', 's', $params->email);
 if (!$query) {
    send_result(false);
 }
