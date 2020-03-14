@@ -157,10 +157,6 @@ function get_user() {
    global $db;
    global $userId;
 
-   /* Circumventing actual verification... */
-   $userId = 1;
-   return;
-
    // Check if a session exists
    if (isset($_SESSION['user_id'])) {
       $userId = $_SESSION['user_id'];
@@ -216,11 +212,6 @@ function get_player() {
    global $playerId;
 
    get_user();
-
-   /* Circumventing actual verification... */
-   $gameId = 1;
-   $playerId = 1;
-   return;
 
    // Check the game
    if (!$_SESSION['game_id']) {
