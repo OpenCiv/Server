@@ -85,7 +85,7 @@ class database extends mysqli {
          send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
       }
 
-      return count($data) === 1 ? $data[0] : null;
+      return count($data) > 1 ? $data[0] : null;
    }
 
    /**
@@ -184,7 +184,7 @@ function get_user() {
 
    // Check if the token from the same user agent and IP address and is not outdated
    $tokenTime = strtotime($query[1]);
-   if ($tokenTime < $_SERVER['REQUEST_TIME'] - 31622400 || $query[2] !== $_SERVER['HTTP_USER_AGENT']) {
+   if ($tokenTime < $_SERVER['REQUEST_TIME'] - 31622400 || $query[2] !== $_SERVER['HTTP_USER_AGENT'] || $query[3] !== $_SERVER['REMOTE_ADDR']) {
       setcookie('token', null, $_SERVER['REQUEST_TIME'] - 42000, '/');
       send_result('Invalid token', 401);
    }
@@ -192,7 +192,7 @@ function get_user() {
    // Check if the user exists and is verified
    $userId = (int)$query[0];
    $query = $db->first('SELECT verified FROM users WHERE id = ?', 'i', $userId);
-   if (count($query) === 0) {
+   if (!$query) {
       logoff();
       send_result('User not found', 401);
    }
@@ -222,6 +222,10 @@ function get_player() {
    $playerId = 1;
    return;
 
+   if (!$_SESSION['verified']) {
+      send_result('The e-mail address has not yet been verified');
+   }
+
    // Check the game
    if (!$_SESSION['game_id']) {
 
@@ -232,7 +236,7 @@ function get_player() {
 
       // Check if the game exists
       $query = $db->first('SELECT EXISTS (SELECT * FROM games WHERE id = ?)', 'i', $params->game);
-      if (!$query[0]) {
+      if (!$query) {
          send_result('Game not found', 403);
       }
 
@@ -259,6 +263,10 @@ function get_player() {
  */
 function set_token() {
    global $db;
+
+   if (!$_SESSION['user_id']) {
+      throw new Exception('Error creating token: user unknown');
+   }
 
    $token = generate_token();
    $db->execute(
