@@ -158,7 +158,7 @@ function get_user() {
    global $userId;
 
    // Check if a session exists
-   if (isset($_SESSION['user_id'])) {
+   if (isset($_SESSION['user_id']) && isset($_SESSION['verified'])) {
       $userId = $_SESSION['user_id'];
       return;
    }
@@ -214,7 +214,7 @@ function get_player() {
    get_user();
 
    if (!$_SESSION['verified']) {
-      send_result('The e-mail address has not yet been verified');
+      send_result('The e-mail address has not yet been verified', 403);
    }
 
    // Check the game
