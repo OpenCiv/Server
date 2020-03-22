@@ -15,8 +15,8 @@ $password = password_hash($params->password, PASSWORD_BCRYPT);
 $db->execute('INSERT INTO users (name, email, password, verified) VALUES (?, ?, ?, 0)', 'sss', $params->name, $params->email, $password);
 
 // Get the user ID and store in the session
-$query = $db->execute('SELECT LAST_INSERT_ID()');
-$userId = (int)$query[0][0];
+$query = $db->first('SELECT LAST_INSERT_ID()');
+$userId = (int)$query[0];
 $_SESSION['user_id'] = $userId;
 set_token();
 send_verification_email($userId, $params->email, $params->name);
