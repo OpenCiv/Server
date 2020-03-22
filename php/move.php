@@ -2,7 +2,7 @@
 require 'init.php';
 get_player();
 
-if (!$params || !$params->id || !$params->x || !$params->y) {
+if (!$params || !isset($params->id) || !isset($params->x) || !isset($params->y)) {
    send_result('Parameter missing', 400);
 }
 

@@ -94,7 +94,7 @@ class database extends mysqli {
     * @param types The first argument of mysqli_stmt::bind_params
     */
    function prepare_transaction($query, $types) {
-      begin_transaction();
+      $this->begin_transaction();
       $this->transaction_statement = $this->prepare($query);
       if (!$this->transaction_statement) {
          send_result('Query failed: ' . $query, 500);
@@ -110,7 +110,7 @@ class database extends mysqli {
    function add_transaction(...$parameters) {
       $this->transaction_parameters = $parameters;
       if (!$this->transaction_statement->execute()) {
-         $db->rollback();
+         $this->rollback();
          send_result('Query failed: ' . $query, 500);
       }
    }
