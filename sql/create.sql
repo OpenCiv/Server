@@ -57,6 +57,7 @@ CREATE TABLE improvements (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
+   completion FLOAT NULL,
    INDEX(game_id, x, y),
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -72,13 +73,24 @@ CREATE TABLE units (
    CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
 );
 
+CREATE TABLE actions (
+   unit_id INT NOT NULL,
+   order INT NOT NULL DEFAULT 0,
+   type VARCHAR(20) NULL,
+   parameters VARCHAR(MAX) NULL,
+   PRIMARY KEY(unit_id, order),
+   CONSTRAINT fk_action_unit FOREIGN KEY (unit_id) REFERENCES units(id)
+);
+
 CREATE TABLE equipment (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-   unit_id INT NULL,
+   game_id INT NOT NULL,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
+   unit_id INT NULL,
    type VARCHAR(20) NOT NULL,
    INDEX(unit_id),
-   INDEX(x, y),
+   INDEX(game_id, x, y),
+   CONSTRAINT fk_equipment_game FOREIGN KEY (game_id) REFERENCES games(id),
    CONSTRAINT fk_equipment_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );

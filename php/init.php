@@ -107,7 +107,7 @@ class database extends mysqli {
     * Adds a SQL statement for later execution
     * @param parameters An array containing the SQL binding values
     */
-   function add_transaction($parameters) {
+   function add_transaction(...$parameters) {
       $this->transaction_parameters = $parameters;
       if (!$this->transaction_statement->execute()) {
          $db->rollback();
