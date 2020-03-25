@@ -36,14 +36,7 @@ $map = [
    [0, 14, 'water'], [1, 14, 'water'], [2, 14, 'grass'], [3, 14, 'grass'], [4, 14, 'grass'], [5, 14, 'grass'], [6, 14, 'water'], [7, 14, 'water'], [8, 14, 'water'], [9, 14, 'grass'], [10, 14, 'grass'], [11, 14, 'grass'], [12, 14, 'water'], [13, 14, 'grass'], [14, 14, 'grass'], [15, 14, 'water'], [16, 14, 'water'], [17, 14, 'water'], [18, 14, 'water'], [19, 14, 'grass'], [20, 14, 'grass'], [21, 14, 'grass'], [22, 14, 'water'], [23, 14, 'water'], [24, 14, 'water'], [25, 14, 'water'], [26, 14, 'grass'], [27, 14, 'grass'], [28, 14, 'grass'], [29, 14, 'grass'], [30, 14, 'water'], [31, 14, 'water'], 
    [0, 15, 'water'], [1, 15, 'water'], [2, 15, 'water'], [3, 15, 'water'], [4, 15, 'water'], [5, 15, 'water'], [6, 15, 'water'], [7, 15, 'water'], [8, 15, 'water'], [9, 15, 'water'], [10, 15, 'water'], [11, 15, 'water'], [12, 15, 'water'], [13, 15, 'water'], [14, 15, 'water'], [15, 15, 'water'], [16, 15, 'water'], [17, 15, 'water'], [18, 15, 'water'], [19, 15, 'water'], [20, 15, 'water'], [21, 15, 'water'], [22, 15, 'water'], [23, 15, 'water'], [24, 15, 'water'], [25, 15, 'water'], [26, 15, 'water'], [27, 15, 'water'], [28, 15, 'water'], [29, 15, 'water'], [30, 15, 'water'], [31, 15, 'water']
 ];
-/*
-$db->prepare_transaction("INSERT INTO terrain (game_id, x, y, type) VALUES ($gameId, ?, ?, ?)", 'iis');
-foreach ($map as $tile) {
-   $db->add_transaction($tile[0], $tile[1], $type[2]);
-}
 
-$db->commit_transaction();
-*/
 $db->begin_transaction();
 $statement = $db->prepare("INSERT INTO terrain (game_id, x, y, type) VALUES ($gameId, ?, ?, ?)");
 $statement->bind_param('iis', $x, $y, $type);
@@ -60,7 +53,7 @@ foreach ($map as $tile) {
 $statement->close();
 $db->commit();
 
-$db->execute("INSERT INTO units (player_id, x, y) VALUES ($playerId, 1, 0)");
+$db->execute("INSERT INTO units (player_id, x, y) VALUES (?, ?, ?)", 'iii', $playerId, 1, 0);
 
 send_result($gameId);
 ?>
