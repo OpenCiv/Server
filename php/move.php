@@ -51,7 +51,7 @@ $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $
 foreach ($query as $tile) {
 
    // The map is filled with booleans indicating whether the tiles are passable by the unit
-   $map[(int)$query[0]][(int)$query[1]] = $query[2] !== 'water';
+   $map[(int)$tile[0]][(int)$tile[1]] = $tile[2] !== 'water';
 }
 
 // Check if the tile can be entered by the unit at all
@@ -96,7 +96,7 @@ do {
 }
 while ($map[$newX][$newY] === true && count($added) > 0);
 
-// If the destination tile is still a boolean, it has not been reached
+// If the destination tile is still a boolean, the destination cannot be reached
 if ($map[$newX][$newY] === true) {
    send_result(false);
 }
@@ -104,25 +104,26 @@ if ($map[$newX][$newY] === true) {
 // Find a way back from the destination to the current location of the unit
 $step = $map[$newX][$newY];
 $path[$step] = ['x' => $newX, 'y' => $newY];
-do
-{
-   for ($testX = $path[$step]['x'] - 1; $testX <= $path[$step]['x'] + 1; $testX++) {
-      for ($y = $path[$step]['y'] - 1; $y <= $path[$step]['y'] + 1; $y++) {
-         if ($y < 0 || $y >= $gameY || isset($path[$step - 1])) {
+while (--$step > 0) {
+   for ($testX = $path[$step + 1]['x'] - 1; $testX <= $path[$step + 1]['x'] + 1; $testX++) {
+      for ($y = $path[$step + 1]['y'] - 1; $y <= $path[$step + 1]['y'] + 1; $y++) {
+
+         // Off the map, or the way back has been found already
+         if (isset($path[$step]) || $y < 0 || $y >= $gameY) {
             continue;
          }
 
          // Date line crossing
          $x = $testX === $gameX ? 0 : ($testX === -1 ? $gameX - 1 : $testX);
+
+         // If a possible way back is found, mark it
          if ($map[$x][$y] === $step) {
-            $path[$step - 1] = ['x' => $x, 'y' => $y];
+            $path[$step] = ['x' => $x, 'y' => $y];
          }
       }
    }
-
-   $step--;
 }
-while ($step > 0);
+
 $path[0] = ['x' => $oldX, 'y' => $oldY];
 
 // Set the action of the unit
