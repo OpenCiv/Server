@@ -125,9 +125,6 @@ while (--$step > 0) {
 }
 
 $path[0] = ['x' => $oldX, 'y' => $oldY];
-
-// Set the action of the unit
-$action = sprintf('move(%d,%d)', $newX, $newY);
-$query = $db->execute('UPDATE units SET action = ? WHERE id = ?', 'si', $action, $params->id);
-send_result($action);
+ksort($path);
+send_result(array_values($path));
 ?>
