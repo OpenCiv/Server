@@ -310,7 +310,7 @@ function send_verification_email($userId, $email, $name) {
  * @return boolean A value indicating whether the e-mail was sent successfully
  */
 function send_mail($email, $name, $subject, $body) {
-   $headers = 'From: Open Civ <noreply@openciv.eu>' . PHP_EOL .
+   $headers = 'From: ' . settings::$email . PHP_EOL .
       'Content-Type: text/plain;charset=utf-8' . PHP_EOL .
       'X-Mailer: PHP/' . phpversion();
    return mail("$name <$email>", $subject, $body, $headers);

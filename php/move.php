@@ -30,18 +30,9 @@ $query = $db->first('SELECT x, y FROM games WHERE id = ?', 'i', $gameId);
 $gameX = (int)$query[0];
 $gameY = (int)$query[1];
 
-// Check if the unit is passing the date line
-if ($newX >= $gameX) {
-   $newX -= $gameX;
-}
-
-if ($newX < 0) {
-   $newX += $gameX;
-}
-
-// Check if the unit is not off the map or is passing the date line
-if ($newY < 0 || $newY >= $gameY) {
-   send_result(false);
+// Check if the destination is not off the map
+if ($newX < 0 || $newX >= $gameX ||$newY < 0 || $newY >= $gameY) {
+   send_result('Illegal destination coordinates', 400);
 }
 
 /* PATHFINDING */
