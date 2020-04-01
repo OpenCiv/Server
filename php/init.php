@@ -87,67 +87,6 @@ class database extends mysqli {
 
       return count($data) > 0 ? $data[0] : $query;
    }
-
-   /**
-    * Prepares a batch of transactions
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    */
-   function prepare_transaction($query, $types) {
-      $this->begin_transaction();
-      $this->transaction_statement = $this->prepare($query);
-      if (!$this->transaction_statement) {
-         send_result('Query failed: ' . $query, 500);
-      }
-
-      $this->transaction_statement->bind_param($types, ...$this->transaction_parameters);
-   }
-
-   /**
-    * Adds a SQL statement for later execution
-    * @param parameters An array containing the SQL binding values
-    */
-   function add_transaction(...$parameters) {
-      $this->transaction_parameters = $parameters;
-      if (!$this->transaction_statement->execute()) {
-         $this->rollback();
-         send_result('Query failed: ' . $query, 500);
-      }
-   }
-
-   /**
-    * Commits the transactions
-    */
-   function commit_transaction() {
-      $this->transaction_statement->close();
-      $this->commit();
-      $this->transaction_parameters = [];
-   }
-
-   /**
-    * Executes a transaction on the database
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param array An array of arrays containing the SQL binding values
-    */
-   function transaction($query, $types = null, $array) {
-      $this->begin_transaction();
-      $statement = $this->prepare($query);
-      if (!$statement) {
-         send_result('Query failed: ' . $query, 500);
-      }
-
-      $statement->bind_param($types, ...$parameters);
-      foreach ($array as $parameters) {
-         if (!$statement->execute()) {
-            $db->rollback();
-            send_result('Query failed: ' . $query, 500);
-         }
-      }
-
-      $statement->close();
-      $this->commit();
-   }
 }
 
 /**

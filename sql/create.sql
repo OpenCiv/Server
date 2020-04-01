@@ -67,7 +67,6 @@ CREATE TABLE units (
    player_id INT NOT NULL,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
-   action VARCHAR(20) NULL,
    INDEX(player_id),
    INDEX(x, y),
    CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
@@ -75,10 +74,10 @@ CREATE TABLE units (
 
 CREATE TABLE actions (
    unit_id INT NOT NULL,
-   order INT NOT NULL DEFAULT 0,
+   ordering INT NOT NULL DEFAULT 0,
    type VARCHAR(20) NULL,
-   parameters VARCHAR(MAX) NULL,
-   PRIMARY KEY(unit_id, order),
+   parameters VARCHAR(20) NULL,
+   PRIMARY KEY(unit_id, ordering),
    CONSTRAINT fk_action_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 

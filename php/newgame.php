@@ -44,10 +44,7 @@ foreach ($map as $tile) {
    $x = $tile[0];
    $y = $tile[1];
    $type = $tile[2];
-   if (!$statement->execute()) {
-      $db->rollback();
-      send_result('Query failed: ' . $query, 500);
-   }
+   $statement->execute();
 }
 
 $statement->close();

@@ -48,5 +48,9 @@ INSERT INTO improvements (game_id, x, y, type) VALUES
 (1, 8, 7, 'pyramid'),
 (1, 9, 7, 'oracle');
 
-INSERT INTO units (player_id, x, y, action) VALUES
-(1, 5, 5, NULL), (1, 12, 19, NULL), (1, 24, 10, NULL), (1, 30, 20, NULL), (1, 33, 5, NULL);
+INSERT INTO units (player_id, x, y) VALUES
+(1, 5, 5),
+(1, 12, 19),
+(1, 24, 10),
+(1, 30, 20),
+(1, 33, 5);

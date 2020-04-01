@@ -60,11 +60,11 @@ foreach ($query as $improvement) {
 }
 
 // Getting the units
-$query = $db->execute('SELECT id, x, y, player_id, action FROM units WHERE player_id = ?', 'i', $playerId);
+$query = $db->execute('SELECT id, x, y, player_id FROM units WHERE player_id = ?', 'i', $playerId);
 foreach ($query as $unit) {
    $x = (int)$unit[1];
    $y = (int)$unit[2];
-   $result['map'][$y][$x]['units'][] = ['id' => (int)$unit[0], 'x' => $x, 'y' => $y, 'player_id' => (int)$unit[3], 'action' => $unit[4]];
+   $result['map'][$y][$x]['units'][] = ['id' => (int)$unit[0], 'x' => $x, 'y' => $y, 'player_id' => (int)$unit[3]];
 }
 
 // Send all data

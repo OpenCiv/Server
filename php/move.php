@@ -6,8 +6,12 @@ if (!$params || !isset($params->id) || !isset($params->x) || !isset($params->y))
    send_result('Parameter missing', 400);
 }
 
+$unitId = $param->id;
+$newX = $params->x;
+$newY = $params->y;
+
 // Get the unit ordered to move
-$query = $db->first('SELECT player_id, x, y FROM units WHERE id = ?', 'i', $params->id);
+$query = $db->first('SELECT player_id, x, y FROM units WHERE id = ?', 'i', $unitId);
 if (!$query) {
    send_result('Unit not found', 400);
 }
@@ -18,8 +22,13 @@ if ($query[0] != $playerId) {
 
 $oldX = (int)$query[1];
 $oldY = (int)$query[2];
-$newX = $params->x;
-$newY = $params->y;
+
+$query = $db->first('SELECT parameters FROM actions WHERE unit_id = ? AND type = ? ORDER BY ordering DESC', 'is', $unitId, 'move');
+if ($query !== null) {
+   $moveParams = explode(',', $query[0]);
+   $oldX = (int)$moveParams[0];
+   $oldY = (int)$moveParams[1];
+}
 
 if ($newX === $oldX && $newY === $oldY) {
    send_result(false);
@@ -115,7 +124,21 @@ while (--$step > 0) {
    }
 }
 
-$path[0] = ['x' => $oldX, 'y' => $oldY];
 ksort($path);
-send_result(array_values($path));
+$path = array_values($path);
+
+$query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
+$order = $query ? (int)$query[0] : -1;
+$db->begin_transaction();
+$statement = $db->prepare("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES ($unitId, ?, 'move', ?)");
+$statement->bind_param('is', $order, $moveParams);
+foreach ($path as $step) {
+   $order++;
+   $moveParams = $step['x'] . ',' . $step['y'];
+   $statement->execute();
+}
+
+$statement->close();
+$db->commit();
+send_result($path);
 ?>
