@@ -85,7 +85,7 @@ class database extends mysqli {
          send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
       }
 
-      return count($data) > 0 ? $data[0] : $query;
+      return count($data) > 0 ? $data[0] : null;
    }
 }
 

@@ -6,7 +6,7 @@ if (!$params || !isset($params->id) || !isset($params->x) || !isset($params->y))
    send_result('Parameter missing', 400);
 }
 
-$unitId = $param->id;
+$unitId = $params->id;
 $newX = $params->x;
 $newY = $params->y;
 
@@ -23,7 +23,7 @@ if ($query[0] != $playerId) {
 $oldX = (int)$query[1];
 $oldY = (int)$query[2];
 
-$query = $db->first('SELECT parameters FROM actions WHERE unit_id = ? AND type = ? ORDER BY ordering DESC', 'is', $unitId, 'move');
+$query = $db->first("SELECT parameters FROM actions WHERE unit_id = ? AND type = 'move' ORDER BY ordering DESC", 'i', $unitId);
 if ($query !== null) {
    $moveParams = explode(',', $query[0]);
    $oldX = (int)$moveParams[0];
@@ -101,37 +101,58 @@ if ($map[$newX][$newY] === true) {
    send_result(false);
 }
 
+$directions = [
+   ['x' => -1, 'y' => 0],
+   ['x' => 0, 'y' => -1],
+   ['x' => 1, 'y' => 0],
+   ['x' => 0, 'y' => 1],
+   ['x' => -1, 'y' => -1],
+   ['x' => 1, 'y' => -1],
+   ['x' => -1, 'y' => 1],
+   ['x' => 1, 'y' => 1]
+];
+
 // Find a way back from the destination to the current location of the unit
 $step = $map[$newX][$newY];
 $path[$step] = ['x' => $newX, 'y' => $newY];
 while (--$step > 0) {
-   for ($testX = $path[$step + 1]['x'] - 1; $testX <= $path[$step + 1]['x'] + 1; $testX++) {
-      for ($y = $path[$step + 1]['y'] - 1; $y <= $path[$step + 1]['y'] + 1; $y++) {
+   foreach ($directions as $direction) {
+      $x = $path[$step + 1]['x'] + $direction['x'];
+      $y = $path[$step + 1]['y'] + $direction['y'];
 
-         // Off the map, or the way back has been found already
-         if (isset($path[$step]) || $y < 0 || $y >= $gameY) {
-            continue;
-         }
+      // Off the map
+      if ($y < 0 || $y >= $gameY) {
+         continue;
+      }
 
-         // Date line crossing
-         $x = $testX === $gameX ? 0 : ($testX === -1 ? $gameX - 1 : $testX);
+      // Date line crossing
+      if ($x === $gameX) {
+         $x = 0;
+      } elseif ($x === -1) {
+         $x = $gameX - 1;
+      }
 
-         // If a possible way back is found, mark it
-         if ($map[$x][$y] === $step) {
-            $path[$step] = ['x' => $x, 'y' => $y];
-         }
+      // If a possible way back is found, mark it
+      if ($map[$x][$y] === $step) {
+         $path[$step] = ['x' => $x, 'y' => $y];
+         break;
       }
    }
 }
 
-ksort($path);
-$path = array_values($path);
+$query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
+$order = $query ? (int)$query[0] + 1 : 0;
+$db->execute("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'move', ?)", 'iis', $unitId, $order, $newX . ',' . $newY);
 
+ksort($path);
+send_result(array_values($path));
+
+/*
 $query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
 $order = $query ? (int)$query[0] : -1;
 $db->begin_transaction();
-$statement = $db->prepare("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES ($unitId, ?, 'move', ?)");
-$statement->bind_param('is', $order, $moveParams);
+$statement = $db->prepare("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'move', ?)");
+$statement->bind_param('iis', $userId, $order, $moveParams);
 foreach ($path as $step) {
    $order++;
    $moveParams = $step['x'] . ',' . $step['y'];
@@ -140,5 +161,5 @@ foreach ($path as $step) {
 
 $statement->close();
 $db->commit();
-send_result($path);
+*/
 ?>
