@@ -31,5 +31,5 @@ if ($query) {
 }
 
 $db->execute("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'build', ?)", 'iis', $unitId, $order, $improvement);
-send_result(true);
+send_result($order);
 ?>

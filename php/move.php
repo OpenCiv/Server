@@ -143,9 +143,7 @@ while (--$step > 0) {
 $query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
 $order = $query ? (int)$query[0] + 1 : 0;
 $db->execute("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'move', ?)", 'iis', $unitId, $order, $newX . ',' . $newY);
-
-ksort($path);
-send_result(array_values($path));
+send_result($order);
 
 /*
 $query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
