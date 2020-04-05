@@ -27,7 +27,7 @@ if ($query) {
 
    $order = (int)$query[2] + 1;
 } else {
-   $order = 0;
+   $order = 1;
 }
 
 $db->execute("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'build', ?)", 'iis', $unitId, $order, $improvement);

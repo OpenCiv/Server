@@ -3,7 +3,7 @@ require 'init.php';
 get_player();
 
 // Getting game details
-$query = $db->first('SELECT name, x, y FROM games WHERE id = ?', 'i', $gameId);
+$query = $db->first('SELECT name, x, y, turn FROM games WHERE id = ?', 'i', $gameId);
 if (!$query) {
    send_result('Game not found', 400);
 }
@@ -11,6 +11,7 @@ if (!$query) {
 $result['game']['name'] = $query[0];
 $result['game']['x'] = (int)$query[1];
 $result['game']['y'] = (int)$query[2];
+$result['game']['turn'] = (int)$query[3];
 
 $query = $db->execute('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
 
@@ -52,11 +53,11 @@ foreach ($query as $tile) {
 }
 
 // Getting the improvements
-$query = $db->execute('SELECT x, y, type FROM improvements WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type, completion FROM improvements WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $improvement) {
    $x = (int)$improvement[0];
    $y = (int)$improvement[1];
-   $result['map'][$y][$x]['improvements'][] = ['type' => $improvement[2], 'x' => $x, 'y' => $y];
+   $result['map'][$y][$x]['improvements'][] = ['type' => $improvement[2], 'x' => $x, 'y' => $y, 'completion' => (float)$improvement[3]];
 }
 
 // Getting the units

@@ -20,7 +20,8 @@ CREATE TABLE games (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
-   name VARCHAR(50) NOT NULL
+   name VARCHAR(50) NOT NULL,
+   turn SMALLINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE players (
@@ -28,6 +29,7 @@ CREATE TABLE players (
    user_id INT NOT NULL,
    game_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,
+   finished BOOLEAN NOT NULL DEFAULT FALSE,
    CONSTRAINT fk_player_user FOREIGN KEY (user_id) REFERENCES users(id),
    CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -57,7 +59,7 @@ CREATE TABLE improvements (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
-   completion FLOAT NULL,
+   completion FLOAT NOT NULL,
    INDEX(game_id, x, y),
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );

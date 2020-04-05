@@ -198,6 +198,20 @@ function get_player() {
 }
 
 /**
+ * Sets the map
+ */
+function get_map() {
+   global $db;
+   global $gameId;
+   global $map;
+
+   $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
+   foreach ($query as $tile) {
+      $map[(int)$tile[0]][(int)$tile[1]] = $tile[2];
+   }
+}
+
+/**
  * Creates a new token and stores is as cookie and in the database
  */
 function set_token() {
@@ -307,6 +321,118 @@ function send_result($result, $code = 200) {
    header('Content-Type: application/json');
    echo json_encode($result);
    exit;
+}
+
+/**
+ * Returns the path for the unit to its destination, or false if it cannot be reached
+ * @param unitId The ID of the unit
+ * @param newX The X coordinate of the unit's destination
+ * @param newY The Y coordinate of the unit's destination
+ * @return array The path from the unit's current location to it's destination
+ */
+function get_path($map, $oldX, $oldY, $newX, $newY) {
+   global $db;
+   global $gameId;
+
+   $passable = ['grass', 'desert', 'tundra'];
+
+   // Get the map size
+   $gameX = count($map);
+   $gameY = count($map[0]);
+
+   // Check if the destination is not off the map
+   if ($newX < 0 || $newX >= $gameX ||$newY < 0 || $newY >= $gameY) {
+      return false;
+   }
+
+   // Check if the tile can be entered by the unit at all
+   if (!in_array($map[$newX][$newY], $passable)) {
+      return false;
+   }
+
+   // The starting point, i.e. the current location of the unit, has a range of zero
+   $range = 0;
+   $map[$oldX][$oldY] = $range;
+
+   // Added are the tiles that can be reached from the given range
+   $added = [['x' => $oldX, 'y' => $oldY]];
+   do {
+
+      // The range is one tile further than the previous step
+      $range++;
+
+      // Continue from the tiles that we were able to reach the previous step
+      $origins = $added;
+      $added = [];
+      foreach ($origins as $tile) {
+
+         // Check every surrounding tile
+         for ($testX = $tile['x'] - 1; $testX <= $tile['x'] + 1; $testX++) {
+            for ($y = $tile['y'] - 1; $y <= $tile['y'] + 1; $y++) {
+               if ($y < 0 || $y >= $gameY) {
+                  continue;
+               }
+
+               // Date line crossing
+               $x = $testX === $gameX ? 0 : ($testX === -1 ? $gameX - 1 : $testX);
+
+               // Set the tile range if the tile is passable and has not been reached yet
+               if (in_array($map[$x][$y], $passable)) {
+                  $map[$x][$y] = $range;
+                  $added[] = ['x' => $x, 'y' => $y];
+               }
+            }
+         }
+      }
+   }
+   while (gettype($map[$newX][$newY]) === 'string' && count($added) > 0);
+
+   // If the destination tile is still a string, the destination has not been reached
+   if (gettype($map[$newX][$newY]) === 'string') {
+      return false;
+   }
+
+   $directions = [
+      ['x' => -1, 'y' => 0],
+      ['x' => 0, 'y' => -1],
+      ['x' => 1, 'y' => 0],
+      ['x' => 0, 'y' => 1],
+      ['x' => -1, 'y' => -1],
+      ['x' => 1, 'y' => -1],
+      ['x' => -1, 'y' => 1],
+      ['x' => 1, 'y' => 1]
+   ];
+   
+   // Find a way back from the destination to the current location of the unit
+   $step = $map[$newX][$newY];
+   $path[$step] = ['x' => $newX, 'y' => $newY];
+   while (--$step > 0) {
+      foreach ($directions as $direction) {
+         $x = $path[$step + 1]['x'] + $direction['x'];
+         $y = $path[$step + 1]['y'] + $direction['y'];
+   
+         // Off the map
+         if ($y < 0 || $y >= $gameY) {
+            continue;
+         }
+   
+         // Date line crossing
+         if ($x === $gameX) {
+            $x = 0;
+         } elseif ($x === -1) {
+            $x = $gameX - 1;
+         }
+   
+         // If a possible way back is found, mark it
+         if ($map[$x][$y] === $step) {
+            $path[$step] = ['x' => $x, 'y' => $y];
+            break;
+         }
+      }
+   }
+
+   ksort($path);
+   return array_values($path);
 }
 
 // Start a session, open the database, and obtain post parameters
