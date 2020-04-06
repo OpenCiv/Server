@@ -10,8 +10,6 @@ if ($query[0]) {
    send_result(false);
 }
 
-get_map();
-
 // Get all units in the game
 $query = $db->execute('SELECT id, x, y FROM units WHERE player_id IN (SELECT id FROM players WHERE game_id = ?)', 'i', $gameId);
 $units = [];
@@ -36,7 +34,7 @@ foreach ($units as $unitId => $unit) {
    switch ($type) {
       case 'move':
          $destination = explode(',', $parameter);
-         $path = get_path($map, $unit['x'], $unit['y'], (int)$destination[0], (int)$destination[1]);
+         $path = get_path($unit['x'], $unit['y'], (int)$destination[0], (int)$destination[1]);
          if ($path) {
             $db->execute('UPDATE units SET x = ?, y = ? WHERE id = ?', 'iii', $path[0]['x'], $path[0]['y'], $unitId);
 

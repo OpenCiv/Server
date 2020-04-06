@@ -36,10 +36,8 @@ if ($newX === $oldX && $newY === $oldY) {
    send_result(false);
 }
 
-get_map();
-
 // Check if the unit can reach the intended destination
-$path = get_path($map, $oldX, $oldY, $newX, $newY);
+$path = get_path($oldX, $oldY, $newX, $newY);
 if (!$path) {
    send_result(false);
 }
@@ -49,20 +47,4 @@ $query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', 
 $order = $query ? (int)$query[0] + 1 : 0;
 $db->execute("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'move', ?)", 'iis', $unitId, $order, $newX . ',' . $newY);
 send_result($order);
-
-/*
-$query = $db->first('SELECT MAX(ordering) FROM actions WHERE unit_id = ?', 'i', $unitId);
-$order = $query ? (int)$query[0] : -1;
-$db->begin_transaction();
-$statement = $db->prepare("INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, 'move', ?)");
-$statement->bind_param('iis', $userId, $order, $moveParams);
-foreach ($path as $step) {
-   $order++;
-   $moveParams = $step['x'] . ',' . $step['y'];
-   $statement->execute();
-}
-
-$statement->close();
-$db->commit();
-*/
 ?>
