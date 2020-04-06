@@ -1,0 +1,46 @@
+{
+   "technologies": [
+      {
+         "name": "alphabet",
+         "cost": 10,
+         "prerequisites": []
+      },
+      {
+         "name": "writing",
+         "cost": 20,
+         "prerequisites": [
+            {
+               "type": "technology",
+               "name": "alphabet"
+            }
+         ]
+      }
+   ],
+   "improvements": [
+      {
+         "name": "farm",
+         "time": 2,
+         "prerequisites": []
+      },
+      {
+         "name": "library",
+         "time": 5,
+         "prerequisites": [
+            {
+               "type": "technology",
+               "name": "writing"
+            }
+         ]
+      }
+   ],
+   "resources": [
+      {
+         "name": "bronze",
+         "prerequisite": []
+      },
+      {
+         "name": "iron",
+         "prerequisite": []
+      }
+   ]
+}
