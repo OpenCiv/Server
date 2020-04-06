@@ -9,16 +9,6 @@ require 'settings.php';
 class database extends mysqli {
 
    /**
-    * The parameters are bound to transaction executions
-    */
-   private $transaction_parameters = [];
-
-   /**
-    * The statement is saved for transactions
-    */
-   private $transaction_statement;
-
-   /**
     * Initializes a new instance of the database class
     */
    function __construct() {
