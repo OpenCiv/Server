@@ -1,23 +1,32 @@
 <?php
-require 'init.php';
+require '../init.php';
 get_user();
-if (!$params || !$params->name) {
+if (!$params || !$params->id) {
    send_result('Parameter missing', 400);
 }
 
-// Create a new game
-$db->execute('INSERT INTO games (x, y, name) VALUES (?, ?, ?)', 'iis', 32, 16, $params->name);
-$query = $db->first('SELECT LAST_INSERT_ID()');
-$gameId = (int)$query[0];
-$_SESSION['game_id'] = $gameId;
+$gameId = $params->id;
+$query = $db->execute('SELECT id, user_id FROM players WHERE game_id = ?', $gameId);
+if (count($query) < 2) {
+   send_result('Not enough players', 400);
+}
 
-// Add the user as player
-$db->execute('INSERT INTO players (user_id, game_id, name) VALUES (?, ?, (SELECT name from users where id = ?))', 'iii', $userId, $gameId, $userId);
-$query = $db->first('SELECT LAST_INSERT_ID()');
-$playerId = (int)$query[0];
-$_SESSION['player_id'] = $playerId;
+if (count($query) > 8) {
+   send_result('Too many players', 400);
+}
 
-// The map is from a template
+$players = [];
+foreach ($query as $player) {
+   $players[] = ['id' => (int)$player[0], 'self' => (int)$player[1] === $userId];
+}
+
+$playerKey = array_search(true, array_column($players, 'self'));
+if ($playerKey === false) {
+   send_result('You are not in this game', 400);
+}
+
+$playerId = $players[$playerKey];
+
 $map = [
    [0, 0, 'water'], [1, 0, 'grass'], [2, 0, 'grass'], [3, 0, 'grass'], [4, 0, 'grass'], [5, 0, 'grass'], [6, 0, 'grass'], [7, 0, 'water'], [8, 0, 'water'], [9, 0, 'water'], [10, 0, 'water'], [11, 0, 'water'], [12, 0, 'water'], [13, 0, 'water'], [14, 0, 'water'], [15, 0, 'water'], [16, 0, 'water'], [17, 0, 'water'], [18, 0, 'water'], [19, 0, 'water'], [20, 0, 'water'], [21, 0, 'water'], [22, 0, 'water'], [23, 0, 'water'], [24, 0, 'water'], [25, 0, 'water'], [26, 0, 'water'], [27, 0, 'water'], [28, 0, 'water'], [29, 0, 'water'], [30, 0, 'water'], [31, 0, 'water'], 
    [0, 1, 'water'], [1, 1, 'grass'], [2, 1, 'water'], [3, 1, 'grass'], [4, 1, 'grass'], [5, 1, 'water'], [6, 1, 'grass'], [7, 1, 'water'], [8, 1, 'water'], [9, 1, 'water'], [10, 1, 'water'], [11, 1, 'water'], [12, 1, 'water'], [13, 1, 'water'], [14, 1, 'water'], [15, 1, 'water'], [16, 1, 'water'], [17, 1, 'water'], [18, 1, 'water'], [19, 1, 'water'], [20, 1, 'water'], [21, 1, 'water'], [22, 1, 'water'], [23, 1, 'water'], [24, 1, 'water'], [25, 1, 'water'], [26, 1, 'water'], [27, 1, 'water'], [28, 1, 'water'], [29, 1, 'water'], [30, 1, 'water'], [31, 1, 'water'], 
@@ -50,7 +59,30 @@ foreach ($map as $tile) {
 $statement->close();
 $db->commit();
 
-$db->execute("INSERT INTO units (player_id, x, y) VALUES (?, ?, ?)", 'iii', $playerId, 1, 0);
+$start = [
+   ['x' => 1, 'y' => 0],
+   ['x' => 10, 'y' => 2],
+   ['x' => 17, 'y' => 2],
+   ['x' => 24, 'y' => 2],
+   ['x' => 2, 'y' => 8],
+   ['x' => 9, 'y' => 10],
+   ['x' => 18, 'y' => 9],
+   ['x' => 26, 'y' => 10]
+];
+$db->begin_transaction();
+$statement = $db->prepare("INSERT INTO units (player_id, x, y) VALUES (?, ?, ?)");
+$statement->bind_param('iii', $player, $x, $y);
+foreach ($players as $index => $player) {
+   $x = $start[$index]['x'];
+   $y = $start[$index]['y'];
+   $statement->execute();
+}
 
-send_result($gameId);
+$statement->close();
+$db->commit();
+
+$_SESSION['game_id'] = $gameId;
+$_SESSION['player_id'] = $playerId;
+
+send_result(true);
 ?>

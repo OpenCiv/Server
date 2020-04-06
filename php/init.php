@@ -208,7 +208,7 @@ function get_map() {
  * @param newY The Y coordinate of the unit's destination
  * @return array The path from the unit's current location to it's destination
  */
-function get_path($map, $oldX, $oldY, $newX, $newY) {
+function get_path($oldX, $oldY, $newX, $newY) {
    global $db;
    global $map;
 

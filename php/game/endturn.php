@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 get_player();
 
 $db->execute('UPDATE players SET finished = 1 WHERE id = ?', 'i', $playerId);

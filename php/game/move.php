@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 get_player();
 
 if (!$params || !isset($params->id) || !isset($params->x) || !isset($params->y)) {

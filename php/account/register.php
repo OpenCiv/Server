@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 if (!$params || !$params->name || !$params->email || !$params->password) {
    send_result(false, 400);
 }
