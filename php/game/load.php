@@ -13,13 +13,11 @@ $result['game']['x'] = (int)$query[1];
 $result['game']['y'] = (int)$query[2];
 $result['game']['turn'] = (int)$query[3];
 
-$query = $db->execute('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $gameId, $userId);
-
 // Getting player info
 $result['players'] = [];
-$query = $db->execute('SELECT id, user_id, name FROM players WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, user_id, name, color, icon FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $player_result = ['id' => (int)$player[0], 'name' => $player[2]];
+   $player_result = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
    $result['players'][] = $player_result;
    if ($player[1] == $playerId) {
       $result['player'] = $player_result;
@@ -61,11 +59,38 @@ foreach ($query as $improvement) {
 }
 
 // Getting the units
-$query = $db->execute('SELECT id, x, y, player_id FROM units WHERE player_id = ?', 'i', $playerId);
-foreach ($query as $unit) {
+$unitQuery = $db->execute('SELECT id, x, y, player_id FROM units WHERE player_id = ?', 'i', $playerId);
+foreach ($unitQuery as $unit) {
+   $unitId = (int)$unit[0];
+
+   // Getting the unit's actions
+   $actions = [];
+   $actionQuery = $db->execute('SELECT ordering, type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
+   foreach ($actionQuery as $action) {
+      $type = $action[1];
+      if ($type === 'move') {
+         if (!$oldX) {
+            $locationQuery = $db->first('SELECT x, y FROM units WHERE id = ?', 'i', $unitId);
+            $oldX = (int)$locationQuery[0];
+            $oldY = (int)$locationQuery[1];
+         }
+
+         $destination = explode(',', $action[2]);
+         $newX = (int)$destination[0];
+         $newY = (int)$destination[1];
+         $parameter = get_path($oldX, $oldY, $newX, $newY);
+         $oldX = $newX;
+         $oldY = $newY;
+      } else {
+         $parameter = $action[2];
+      }
+
+      $actions[] = ['order' => (int)$action[0], 'type' => $type, 'parameter' => $parameter];
+   }
+
    $x = (int)$unit[1];
    $y = (int)$unit[2];
-   $result['map'][$y][$x]['units'][] = ['id' => (int)$unit[0], 'x' => $x, 'y' => $y, 'player_id' => (int)$unit[3]];
+   $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => (int)$unit[3], 'actions' => $actions];
 }
 
 // Send all data

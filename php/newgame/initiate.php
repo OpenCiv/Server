@@ -1,12 +1,12 @@
 <?php
 require '../init.php';
 get_user();
-if (!$params || !$params->name || !$params->players) {
+if (!$params || !$params->name) {
    send_result('Parameter missing', 400);
 }
 
 // Create a new game
-$db->execute('INSERT INTO games (name, x, y, players) VALUES (?, 32, 16, ?)', 'siii', $params->name, $params->players);
+$db->execute('INSERT INTO games (name, x, y) VALUES (?, 32, 16)', 's', $params->name);
 $query = $db->first('SELECT LAST_INSERT_ID()');
 $gameId = (int)$query[0];
 

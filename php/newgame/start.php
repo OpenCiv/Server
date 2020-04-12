@@ -16,16 +16,17 @@ if (count($query) > 8) {
 }
 
 $players = [];
+$playerId = false;
 foreach ($query as $player) {
-   $players[] = ['id' => (int)$player[0], 'self' => (int)$player[1] === $userId];
+   $players[] = (int)$player[0];
+   if ($player[1] == $userId) {
+      $playerId = (int)$player[0];
+   }
 }
 
-$playerKey = array_search(true, array_column($players, 'self'));
-if ($playerKey === false) {
+if ($playerId === false) {
    send_result('You are not in this game', 400);
 }
-
-$playerId = $players[$playerKey];
 
 $map = [
    [0, 0, 'water'], [1, 0, 'grass'], [2, 0, 'grass'], [3, 0, 'grass'], [4, 0, 'grass'], [5, 0, 'grass'], [6, 0, 'grass'], [7, 0, 'water'], [8, 0, 'water'], [9, 0, 'water'], [10, 0, 'water'], [11, 0, 'water'], [12, 0, 'water'], [13, 0, 'water'], [14, 0, 'water'], [15, 0, 'water'], [16, 0, 'water'], [17, 0, 'water'], [18, 0, 'water'], [19, 0, 'water'], [20, 0, 'water'], [21, 0, 'water'], [22, 0, 'water'], [23, 0, 'water'], [24, 0, 'water'], [25, 0, 'water'], [26, 0, 'water'], [27, 0, 'water'], [28, 0, 'water'], [29, 0, 'water'], [30, 0, 'water'], [31, 0, 'water'], 

@@ -77,5 +77,9 @@ if ($query) {
 }
 
 $db->execute('INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $order, $type, $parameter);
-send_result($order);
+if ($path) {
+   $parameter = $path;
+}
+
+send_result(['order' => $order, 'type' => $type, 'parameter' => $parameter]);
 ?>

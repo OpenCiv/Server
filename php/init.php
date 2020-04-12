@@ -216,11 +216,14 @@ function get_path($oldX, $oldY, $newX, $newY) {
       get_map();
    }
 
+   $copy = $map;
+
+   // This array will  depend on the unit
    $passable = ['grass', 'desert', 'tundra'];
 
    // Get the map size
-   $gameX = count($map);
-   $gameY = count($map[0]);
+   $gameX = count($copy);
+   $gameY = count($copy[0]);
 
    // Check if the destination is not off the map
    if ($newX < 0 || $newX >= $gameX ||$newY < 0 || $newY >= $gameY) {
@@ -228,13 +231,13 @@ function get_path($oldX, $oldY, $newX, $newY) {
    }
 
    // Check if the tile can be entered by the unit at all
-   if (!in_array($map[$newX][$newY], $passable)) {
+   if (!in_array($copy[$newX][$newY], $passable)) {
       return false;
    }
 
    // The starting point, i.e. the current location of the unit, has a range of zero
    $range = 0;
-   $map[$oldX][$oldY] = $range;
+   $copy[$oldX][$oldY] = $range;
 
    // Added are the tiles that can be reached from the given range
    $added = [['x' => $oldX, 'y' => $oldY]];
@@ -259,18 +262,18 @@ function get_path($oldX, $oldY, $newX, $newY) {
                $x = $testX === $gameX ? 0 : ($testX === -1 ? $gameX - 1 : $testX);
 
                // Set the tile range if the tile is passable and has not been reached yet
-               if (in_array($map[$x][$y], $passable)) {
-                  $map[$x][$y] = $range;
+               if (in_array($copy[$x][$y], $passable)) {
+                  $copy[$x][$y] = $range;
                   $added[] = ['x' => $x, 'y' => $y];
                }
             }
          }
       }
    }
-   while (gettype($map[$newX][$newY]) === 'string' && count($added) > 0);
+   while (gettype($copy[$newX][$newY]) === 'string' && count($added) > 0);
 
    // If the destination tile is still a string, the destination has not been reached
-   if (gettype($map[$newX][$newY]) === 'string') {
+   if (gettype($copy[$newX][$newY]) === 'string') {
       return false;
    }
 
@@ -286,7 +289,7 @@ function get_path($oldX, $oldY, $newX, $newY) {
    ];
 
    // Find a way back from the destination to the current location of the unit
-   $step = $map[$newX][$newY];
+   $step = $copy[$newX][$newY];
    $path[$step] = ['x' => $newX, 'y' => $newY];
    while (--$step > 0) {
       foreach ($directions as $direction) {
@@ -306,13 +309,14 @@ function get_path($oldX, $oldY, $newX, $newY) {
          }
 
          // If a possible way back is found, mark it
-         if ($map[$x][$y] === $step) {
+         if ($copy[$x][$y] === $step) {
             $path[$step] = ['x' => $x, 'y' => $y];
             break;
          }
       }
    }
 
+   $path[0] = ['x' => $oldX, 'y' => $oldY];
    ksort($path);
    return array_values($path);
 }

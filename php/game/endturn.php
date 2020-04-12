@@ -51,8 +51,17 @@ foreach ($units as $unitId => $unit) {
          } elseif ($query[0] === $parameter) {
             $completion = min(1, (float)$query[1] + 0.2);
             $db->execute('UPDATE improvements SET completion = ? WHERE game_id = ? AND x = ? AND y = ?', 'diii', $completion, $gameId, $unit['x'], $unit['y']);
-            $result = $completion === 1 ? true : null;
+            if ($completion === 1) {
+               $db->execute("DELETE action.* FROM actions action INNER JOIN units unit ON action.unit_id = unit.id WHERE action.ordering = 1 AND action.type = 'build' AND unit.x = ? AND unit.y = ?", 'iii', $unit['x'], $unit['y']);
+               $result = true;
+            } else {
+               $result = null;
+            }
          }
+      break;
+
+      case 'settle':
+         
       break;
    }
 
