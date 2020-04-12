@@ -78,7 +78,7 @@ CREATE TABLE actions (
    unit_id INT NOT NULL,
    ordering INT NOT NULL DEFAULT 0,
    type VARCHAR(20) NULL,
-   parameters VARCHAR(20) NULL,
+   parameter VARCHAR(20) NULL,
    PRIMARY KEY(unit_id, ordering),
    CONSTRAINT fk_action_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );

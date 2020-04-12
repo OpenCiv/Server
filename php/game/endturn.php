@@ -19,7 +19,7 @@ foreach ($query as $row) {
 
 // Resolve all unit actions
 foreach ($units as $unitId => $unit) {
-   $query = $db->first('SELECT type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
+   $query = $db->first('SELECT type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
    if (!$query) {
       continue;
    }

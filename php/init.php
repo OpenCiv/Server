@@ -334,7 +334,7 @@ function get_actions() {
    global $oldX;
    global $oldY;
 
-   $query = $db->execute("SELECT ordering, type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering", 'i', $unitId);
+   $query = $db->execute("SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering", 'i', $unitId);
    $actions = [];
    foreach ($query as $action) {
       $order = (int)$action[0];

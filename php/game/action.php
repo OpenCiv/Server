@@ -22,7 +22,7 @@ if ($query[0] != $playerId) {
 $oldX = (int)$query[1];
 $oldY = (int)$query[2];
 
-$query = $db->first("SELECT ordering, type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering DESC", 'i', $unitId);
+$query = $db->first("SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering DESC", 'i', $unitId);
 if ($query !== null) {
 
    // Check if the intended action differs from the last action
@@ -55,7 +55,7 @@ if ($params->type === 'move') {
 }
 
 //...while only the destination is stored in the database
-$db->execute('INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
+$db->execute('INSERT INTO actions (unit_id, ordering, type, parameter) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
 
 send_result($actions);
 ?>
