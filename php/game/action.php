@@ -7,7 +7,6 @@ if (!$params || !isset($params->id) || !isset($params->type) || !isset($params->
 }
 
 $unitId = $params->id;
-$type = $params->type;
 
 // Get the unit ordered to build
 $query = $db->first('SELECT player_id, x, y FROM units WHERE id = ?', 'i', $unitId);
@@ -19,67 +18,44 @@ if ($query[0] != $playerId) {
    send_result('Not the player\'s unit', 403);
 }
 
-// A move needs be checked for feasibility
-if ($type === 'move') {
-   if (strpos($params->parameter, ',') === false) {
-      send_result('Coordinates missing', 400);
-   }
+// If there are no other move actions, the starting point is the unit's current location
+$oldX = (int)$query[1];
+$oldY = (int)$query[2];
 
-   $oldX = (int)$query[1];
-   $oldY = (int)$query[2];
-   $parameter = explode(',', $params->parameter);
-   $newX = (int)$parameter[0];
-   $newY = (int)$parameter[1];
+$query = $db->first("SELECT ordering, type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering DESC", 'i', $unitId);
+if ($query !== null) {
 
-   // The place of departure is the destination of the last move action
-   $query = $db->first("SELECT parameters FROM actions WHERE unit_id = ? AND type = 'move' ORDER BY ordering DESC", 'i', $unitId);
-   if ($query !== null) {
-      $parameter = explode(',', $query[0]);
-      $oldX = (int)$parameter[0];
-      $oldY = (int)$parameter[1];
-   }
-
-   // If the location is the same, no action is needed
-   if ($newX === $oldX && $newY === $oldY) {
+   // Check if the intended action differs from the last action
+   if ($query[1] === $params->type && $query[2] === $params->parameter) {
       send_result(false);
    }
 
-   // Check if the unit can reach the intended destination
-   $path = get_path($oldX, $oldY, $newX, $newY);
+   $newOrder = (int)$query[0] + 1;
+} else {
+   $newOrder = 1;
+}
+
+// This will set $oldX and $oldY to the destination of the last move action
+$actions = get_actions();
+
+// A move needs be checked for feasibility
+if ($params->type === 'move') {
+
+   // Get the path to the intended destination
+   $coordinates = explode(',', $params->parameter);
+   $path = get_path($oldX, $oldY, (int)$coordinates[0], (int)$coordinates[1]);
    if (!$path) {
       send_result(false);
    }
-
-   // The path is resolved, so we can set the parameter and save the order
-   $parameter = $newX . ',' . $newY;
+   
+   // The path is sent back to the client...
+   $actions[] = ['order' => $newOrder, 'type' => 'move', 'parameter' => $path];
 } else {
-   $parameter = $params->parameter;
+   $actions[] = ['order' => $newOrder, 'type' => $params->type, 'parameter' => $params->parameter];
 }
 
-// Get the last action
-$query = $db->first('SELECT type, parameters, ordering FROM actions WHERE unit_id = ? ORDER BY ordering DESC', 'i', $unitId);
-if ($query) {
+//...while only the destination is stored in the database
+$db->execute('INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
 
-   // Check if the same order is not 
-   if ($query[0] === $type && $query[1] === $parameter) {
-      send_result(false);
-   }
-
-   if ($query[0] === 'settle') {
-      $order = (int)$query[2];
-      $db->execute('UPDATE actions SET type = ?, parameters = ? WHERE unit_id = ? AND ordering = ?', 'ssii', $type, $parameter, $unitId, $order);
-      send_result($order);
-   }
-
-   $order = (int)$query[2] + 1;
-} else {
-   $order = 1;
-}
-
-$db->execute('INSERT INTO actions (unit_id, ordering, type, parameters) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $order, $type, $parameter);
-if ($path) {
-   $parameter = $path;
-}
-
-send_result(['order' => $order, 'type' => $type, 'parameter' => $parameter]);
+send_result($actions);
 ?>

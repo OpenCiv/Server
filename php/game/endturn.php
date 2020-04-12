@@ -19,7 +19,7 @@ foreach ($query as $row) {
 
 // Resolve all unit actions
 foreach ($units as $unitId => $unit) {
-   $query = $db->first('SELECT type, parameters FROM actions WHERE ordering = 1 AND unit_id = ?', 'i', $unitId);
+   $query = $db->first('SELECT type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
    if (!$query) {
       continue;
    }
@@ -35,11 +35,15 @@ foreach ($units as $unitId => $unit) {
       case 'move':
          $destination = explode(',', $parameter);
          $path = get_path($unit['x'], $unit['y'], (int)$destination[0], (int)$destination[1]);
-         if ($path) {
-            $db->execute('UPDATE units SET x = ?, y = ? WHERE id = ?', 'iii', $path[0]['x'], $path[0]['y'], $unitId);
+         if ($path && count($path) > 1) {
+            $db->execute('UPDATE units SET x = ?, y = ? WHERE id = ?', 'iii', $path[1]['x'], $path[1]['y'], $unitId);
 
-            // If the path consists of only one step, the unit has reached its destination
-            $result = count($path) === 1 ? true : null;
+            // If the path consists of only two locations, the unit has reached its destination
+            $result = count($path) === 2 ? true : null;
+         } else {
+
+            // The destination has become unreachable
+            $result = false;
          }
       break;
 

@@ -322,6 +322,44 @@ function get_path($oldX, $oldY, $newX, $newY) {
 }
 
 /**
+ * Returns the actions of a unit
+ * @global database $db The database
+ * @global int $unitId The ID of the unit
+ * @global int $oldX The unit's current X-coordinate - this will be changed to the last location
+ * @global int $oldY The unit's current Y-coordinate - this will be changed to the last location
+ */
+function get_actions() {
+   global $db;
+   global $unitId;
+   global $oldX;
+   global $oldY;
+
+   $query = $db->execute("SELECT ordering, type, parameters FROM actions WHERE unit_id = ? ORDER BY ordering", 'i', $unitId);
+   $actions = [];
+   foreach ($query as $action) {
+      $order = (int)$action[0];
+      $type = $action[1];
+      
+      // Move actions have the whole path as parameter
+      // This will also set the starting point for the possible subsequent move action
+      if ($type === 'move') {
+         $coordinates = explode(',', $action[2]);
+         $newX = (int)$coordinates[0];
+         $newY = (int)$coordinates[1];
+         $parameter = get_path($oldX, $oldY, $newX, $newY);
+         $oldX = $newX;
+         $oldY = $newY;
+      } else {
+         $parameter = $action[2];
+      }
+   
+      $actions[] = ['order' => $order, 'type' => $type, 'parameter' => $parameter];
+   }
+
+   return $actions;
+}
+
+/**
  * Creates a new token and stores is as cookie and in the database
  */
 function set_token() {
