@@ -43,6 +43,15 @@ CREATE TABLE terrain (
    CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
+CREATE TABLE vegetation (
+   game_id INT NOT NULL,
+   x SMALLINT NOT NULL,
+   y SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   PRIMARY KEY(game_id, x, y),
+   CONSTRAINT fk_vegetation_game FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
 CREATE TABLE resources (
    game_id INT NOT NULL,
    x SMALLINT NOT NULL,
@@ -54,13 +63,12 @@ CREATE TABLE resources (
 );
 
 CREATE TABLE improvements (
-   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    game_id INT NOT NULL,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
    completion FLOAT NOT NULL,
-   INDEX(game_id, x, y),
+   PRIMARY KEY(game_id, x, y),
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
