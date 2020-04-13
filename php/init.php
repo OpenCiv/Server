@@ -22,9 +22,9 @@ class database extends mysqli {
 
    /**
     * Executes a query and returns the result
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param parameters The other arguments of mysqli_stmt::bind_params
+    * @param string $query The SQL query
+    * @param string $types The first argument of mysqli_stmt::bind_params
+    * @param any $parameters The other arguments of mysqli_stmt::bind_params
     * @return array The results of the query
     */
    function execute($query, $types = null, ...$parameters) {
@@ -63,10 +63,10 @@ class database extends mysqli {
 
    /**
     * Returns the first result of a SELECT query, or null if there was none
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param parameters The other arguments of mysqli_stmt::bind_params
-    * @return any The first result of the query
+    * @param string $query The SQL query
+    * @param string $types The first argument of mysqli_stmt::bind_params
+    * @param any $parameters The other arguments of mysqli_stmt::bind_params
+    * @return array The first result of the query
     */
    function first($query, $types = null, ...$parameters) {
       $query .= ' LIMIT 1';
@@ -203,9 +203,9 @@ function get_map() {
 
 /**
  * Returns the path for the unit to its destination, or false if it cannot be reached
- * @param unitId The ID of the unit
- * @param newX The X coordinate of the unit's destination
- * @param newY The Y coordinate of the unit's destination
+ * @param int $unitId The ID of the unit
+ * @param int $newX The X coordinate of the unit's destination
+ * @param int $newY The Y coordinate of the unit's destination
  * @return array The path from the unit's current location to it's destination
  */
 function get_path($oldX, $oldY, $newX, $newY) {
@@ -334,7 +334,7 @@ function get_actions() {
    global $oldX;
    global $oldY;
 
-   $query = $db->execute("SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering", 'i', $unitId);
+   $query = $db->execute('SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
    $actions = [];
    foreach ($query as $action) {
       $order = (int)$action[0];
@@ -383,14 +383,14 @@ function set_token() {
 
 /**
  * Sends an e-mail to the user containing a link to verify the e-mail address
- * @param userId The user's ID
- * @param email The user's e-mail address
+ * @param int $userId The user's ID
+ * @param string $email The user's e-mail address
  */
 function send_verification_email($userId, $email, $name) {
    global $db;
 
    $token = generate_token();
-   $db->execute("INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)", 'iss', $userId, $token, 'verify');
+   $db->execute('INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)', 'iss', $userId, $token, 'verify');
    $body = "Hello $name," . PHP_EOL . PHP_EOL .
       'Please follow this link to verify your account:' . PHP_EOL .
       settings::$origin . "/account?token=$token" . PHP_EOL . PHP_EOL .
@@ -404,10 +404,10 @@ function send_verification_email($userId, $email, $name) {
 
 /**
  * Send an e-mail and returns whether it succeeded
- * @param email The e-mail is sent to this e-mail address
- * @param name The name of the receiver
- * @param subject The title of the e-mail
- * @param body The content of the e-mail
+ * @param string $email The e-mail is sent to this e-mail address
+ * @param string $name The name of the receiver
+ * @param string $subject The title of the e-mail
+ * @param string $body The content of the e-mail
  * @return boolean A value indicating whether the e-mail was sent successfully
  */
 function send_mail($email, $name, $subject, $body) {
@@ -453,8 +453,8 @@ function logoff() {
 
 /**
  * The function returns results to the client
- * @param result The parameter will be encoded into JSON and sent back to the client
- * @param code The HTTP status code
+ * @param any $result The parameter will be encoded into JSON and sent back to the client
+ * @param int $code The HTTP status code
  */
 function send_result($result, $code = 200) {
    global $db;
