@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 
 // A login attempt should come as a post method
 if (!$params || !$params->username || !$params->password) {

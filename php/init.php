@@ -9,16 +9,6 @@ require 'settings.php';
 class database extends mysqli {
 
    /**
-    * The parameters are bound to transaction executions
-    */
-   private $transaction_parameters = [];
-
-   /**
-    * The statement is saved for transactions
-    */
-   private $transaction_statement;
-
-   /**
     * Initializes a new instance of the database class
     */
    function __construct() {
@@ -32,9 +22,9 @@ class database extends mysqli {
 
    /**
     * Executes a query and returns the result
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param parameters The other arguments of mysqli_stmt::bind_params
+    * @param string $query The SQL query
+    * @param string $types The first argument of mysqli_stmt::bind_params
+    * @param any $parameters The other arguments of mysqli_stmt::bind_params
     * @return array The results of the query
     */
    function execute($query, $types = null, ...$parameters) {
@@ -73,10 +63,10 @@ class database extends mysqli {
 
    /**
     * Returns the first result of a SELECT query, or null if there was none
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param parameters The other arguments of mysqli_stmt::bind_params
-    * @return any The first result of the query
+    * @param string $query The SQL query
+    * @param string $types The first argument of mysqli_stmt::bind_params
+    * @param any $parameters The other arguments of mysqli_stmt::bind_params
+    * @return array The first result of the query
     */
    function first($query, $types = null, ...$parameters) {
       $query .= ' LIMIT 1';
@@ -85,68 +75,7 @@ class database extends mysqli {
          send_result("Unexpected result '" . json_encode($data) . "' from query '$query'", 500);
       }
 
-      return count($data) > 0 ? $data[0] : $query;
-   }
-
-   /**
-    * Prepares a batch of transactions
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    */
-   function prepare_transaction($query, $types) {
-      $this->begin_transaction();
-      $this->transaction_statement = $this->prepare($query);
-      if (!$this->transaction_statement) {
-         send_result('Query failed: ' . $query, 500);
-      }
-
-      $this->transaction_statement->bind_param($types, ...$this->transaction_parameters);
-   }
-
-   /**
-    * Adds a SQL statement for later execution
-    * @param parameters An array containing the SQL binding values
-    */
-   function add_transaction(...$parameters) {
-      $this->transaction_parameters = $parameters;
-      if (!$this->transaction_statement->execute()) {
-         $this->rollback();
-         send_result('Query failed: ' . $query, 500);
-      }
-   }
-
-   /**
-    * Commits the transactions
-    */
-   function commit_transaction() {
-      $this->transaction_statement->close();
-      $this->commit();
-      $this->transaction_parameters = [];
-   }
-
-   /**
-    * Executes a transaction on the database
-    * @param query The SQL query
-    * @param types The first argument of mysqli_stmt::bind_params
-    * @param array An array of arrays containing the SQL binding values
-    */
-   function transaction($query, $types = null, $array) {
-      $this->begin_transaction();
-      $statement = $this->prepare($query);
-      if (!$statement) {
-         send_result('Query failed: ' . $query, 500);
-      }
-
-      $statement->bind_param($types, ...$parameters);
-      foreach ($array as $parameters) {
-         if (!$statement->execute()) {
-            $db->rollback();
-            send_result('Query failed: ' . $query, 500);
-         }
-      }
-
-      $statement->close();
-      $this->commit();
+      return count($data) > 0 ? $data[0] : null;
    }
 }
 
@@ -250,6 +179,178 @@ function get_player() {
 }
 
 /**
+ * Sets the map
+ */
+function get_map() {
+   global $db;
+   global $gameId;
+   global $map;
+
+   $query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
+   foreach ($query as $tile) {
+      $map[(int)$tile[0]][(int)$tile[1]] = $tile[2];
+   }
+}
+
+/**
+ * Returns the path for the unit to its destination, or false if it cannot be reached
+ * @param int $unitId The ID of the unit
+ * @param int $newX The X coordinate of the unit's destination
+ * @param int $newY The Y coordinate of the unit's destination
+ * @return array The path from the unit's current location to it's destination
+ */
+function get_path($oldX, $oldY, $newX, $newY) {
+   global $db;
+   global $map;
+
+   if (!$map) {
+      get_map();
+   }
+
+   $copy = $map;
+
+   // This array will  depend on the unit
+   $passable = ['grass', 'desert', 'tundra'];
+
+   // Get the map size
+   $gameX = count($copy);
+   $gameY = count($copy[0]);
+
+   // Check if the destination is not off the map
+   if ($newX < 0 || $newX >= $gameX ||$newY < 0 || $newY >= $gameY) {
+      return false;
+   }
+
+   // Check if the tile can be entered by the unit at all
+   if (!in_array($copy[$newX][$newY], $passable)) {
+      return false;
+   }
+
+   // The starting point, i.e. the current location of the unit, has a range of zero
+   $range = 0;
+   $copy[$oldX][$oldY] = $range;
+
+   // Added are the tiles that can be reached from the given range
+   $added = [['x' => $oldX, 'y' => $oldY]];
+   do {
+
+      // The range is one tile further than the previous step
+      $range++;
+
+      // Continue from the tiles that we were able to reach the previous step
+      $origins = $added;
+      $added = [];
+      foreach ($origins as $tile) {
+
+         // Check every surrounding tile
+         for ($testX = $tile['x'] - 1; $testX <= $tile['x'] + 1; $testX++) {
+            for ($y = $tile['y'] - 1; $y <= $tile['y'] + 1; $y++) {
+               if ($y < 0 || $y >= $gameY) {
+                  continue;
+               }
+
+               // Date line crossing
+               $x = $testX === $gameX ? 0 : ($testX === -1 ? $gameX - 1 : $testX);
+
+               // Set the tile range if the tile is passable and has not been reached yet
+               if (in_array($copy[$x][$y], $passable)) {
+                  $copy[$x][$y] = $range;
+                  $added[] = ['x' => $x, 'y' => $y];
+               }
+            }
+         }
+      }
+   }
+   while (gettype($copy[$newX][$newY]) === 'string' && count($added) > 0);
+
+   // If the destination tile is still a string, the destination has not been reached
+   if (gettype($copy[$newX][$newY]) === 'string') {
+      return false;
+   }
+
+   $directions = [
+      ['x' => -1, 'y' => 0],
+      ['x' => 0, 'y' => -1],
+      ['x' => 1, 'y' => 0],
+      ['x' => 0, 'y' => 1],
+      ['x' => -1, 'y' => -1],
+      ['x' => 1, 'y' => -1],
+      ['x' => -1, 'y' => 1],
+      ['x' => 1, 'y' => 1]
+   ];
+
+   // Find a way back from the destination to the current location of the unit
+   $step = $copy[$newX][$newY];
+   $path[$step] = ['x' => $newX, 'y' => $newY];
+   while (--$step > 0) {
+      foreach ($directions as $direction) {
+         $x = $path[$step + 1]['x'] + $direction['x'];
+         $y = $path[$step + 1]['y'] + $direction['y'];
+
+         // Off the map
+         if ($y < 0 || $y >= $gameY) {
+            continue;
+         }
+
+         // Date line crossing
+         if ($x === $gameX) {
+            $x = 0;
+         } elseif ($x === -1) {
+            $x = $gameX - 1;
+         }
+
+         // If a possible way back is found, mark it
+         if ($copy[$x][$y] === $step) {
+            $path[$step] = ['x' => $x, 'y' => $y];
+            break;
+         }
+      }
+   }
+
+   $path[0] = ['x' => $oldX, 'y' => $oldY];
+   ksort($path);
+   return array_values($path);
+}
+
+/**
+ * Returns the actions of a unit
+ * @global database $db The database
+ * @global int $unitId The ID of the unit
+ * @global int $oldX The unit's current X-coordinate - this will be changed to the last location
+ * @global int $oldY The unit's current Y-coordinate - this will be changed to the last location
+ */
+function get_actions() {
+   global $db;
+   global $unitId;
+   global $oldX;
+   global $oldY;
+
+   $query = $db->execute('SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
+   $actions = [];
+   foreach ($query as $action) {
+      $order = (int)$action[0];
+      $type = $action[1];
+      
+      // Move actions have the whole path as parameter
+      // This will also set the starting point for the possible subsequent move action
+      if ($type === 'move') {
+         $coordinates = explode(',', $action[2]);
+         $newX = (int)$coordinates[0];
+         $newY = (int)$coordinates[1];
+         $parameter = get_path($oldX, $oldY, $newX, $newY);
+         $oldX = $newX;
+         $oldY = $newY;
+      } else {
+         $parameter = $action[2];
+      }
+   
+      $actions[] = ['order' => $order, 'type' => $type, 'parameter' => $parameter];
+   }
+
+   return $actions;
+}
+
+/**
  * Creates a new token and stores is as cookie and in the database
  */
 function set_token() {
@@ -273,14 +374,14 @@ function set_token() {
 
 /**
  * Sends an e-mail to the user containing a link to verify the e-mail address
- * @param userId The user's ID
- * @param email The user's e-mail address
+ * @param int $userId The user's ID
+ * @param string $email The user's e-mail address
  */
 function send_verification_email($userId, $email, $name) {
    global $db;
 
    $token = generate_token();
-   $db->execute("INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)", 'iss', $userId, $token, 'verify');
+   $db->execute('INSERT INTO tokens (user_id, value, user_agent) VALUES (?, ?, ?)', 'iss', $userId, $token, 'verify');
    $body = "Hello $name," . PHP_EOL . PHP_EOL .
       'Please follow this link to verify your account:' . PHP_EOL .
       settings::$origin . "/account?token=$token" . PHP_EOL . PHP_EOL .
@@ -294,14 +395,14 @@ function send_verification_email($userId, $email, $name) {
 
 /**
  * Send an e-mail and returns whether it succeeded
- * @param email The e-mail is sent to this e-mail address
- * @param name The name of the receiver
- * @param subject The title of the e-mail
- * @param body The content of the e-mail
+ * @param string $email The e-mail is sent to this e-mail address
+ * @param string $name The name of the receiver
+ * @param string $subject The title of the e-mail
+ * @param string $body The content of the e-mail
  * @return boolean A value indicating whether the e-mail was sent successfully
  */
 function send_mail($email, $name, $subject, $body) {
-   $headers = 'From: Open Civ <noreply@openciv.eu>' . PHP_EOL .
+   $headers = 'From: ' . settings::$email . PHP_EOL .
       'Content-Type: text/plain;charset=utf-8' . PHP_EOL .
       'X-Mailer: PHP/' . phpversion();
    return mail("$name <$email>", $subject, $body, $headers);
@@ -343,8 +444,8 @@ function logoff() {
 
 /**
  * The function returns results to the client
- * @param result The parameter will be encoded into JSON and sent back to the client
- * @param code The HTTP status code
+ * @param any $result The parameter will be encoded into JSON and sent back to the client
+ * @param int $code The HTTP status code
  */
 function send_result($result, $code = 200) {
    global $db;

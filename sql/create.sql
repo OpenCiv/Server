@@ -20,7 +20,8 @@ CREATE TABLE games (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
-   name VARCHAR(50) NOT NULL
+   name VARCHAR(50) NOT NULL,
+   turn SMALLINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE players (
@@ -28,6 +29,7 @@ CREATE TABLE players (
    user_id INT NOT NULL,
    game_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,
+   finished BOOLEAN NOT NULL DEFAULT FALSE,
    CONSTRAINT fk_player_user FOREIGN KEY (user_id) REFERENCES users(id),
    CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -57,7 +59,7 @@ CREATE TABLE improvements (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
-   completion FLOAT NULL,
+   completion FLOAT NOT NULL,
    INDEX(game_id, x, y),
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -67,7 +69,6 @@ CREATE TABLE units (
    player_id INT NOT NULL,
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
-   action VARCHAR(20) NULL,
    INDEX(player_id),
    INDEX(x, y),
    CONSTRAINT fk_unit_player FOREIGN KEY (player_id) REFERENCES players(id)
@@ -75,10 +76,10 @@ CREATE TABLE units (
 
 CREATE TABLE actions (
    unit_id INT NOT NULL,
-   order INT NOT NULL DEFAULT 0,
+   ordering INT NOT NULL DEFAULT 0,
    type VARCHAR(20) NULL,
-   parameters VARCHAR(MAX) NULL,
-   PRIMARY KEY(unit_id, order),
+   parameter VARCHAR(20) NULL,
+   PRIMARY KEY(unit_id, ordering),
    CONSTRAINT fk_action_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 

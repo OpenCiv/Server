@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 
 // Check if the token is passed
 if (!$params || !$params->token) {

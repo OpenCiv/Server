@@ -1,5 +1,5 @@
 <?php
-require 'init.php';
+require '../init.php';
 get_user();
 if (!$params || !$params->email) {
    send_result('Parameter missing', 400);

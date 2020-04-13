@@ -37,16 +37,20 @@ INSERT INTO resources (game_id, x, y, type, quantity) VALUES
 (1, 8, 9, 'sandstone', 10000),
 (1, 9, 9, 'silver', 1000);
 
-INSERT INTO improvements (game_id, x, y, type) VALUES
-(1, 1, 7, 'castle'),
-(1, 2, 7, 'tower'),
-(1, 3, 7, 'craftshop'),
-(1, 4, 7, 'fisher'),
-(1, 5, 7, 'market'),
-(1, 6, 7, 'church'),
-(1, 7, 7, 'temple'),
-(1, 8, 7, 'pyramid'),
-(1, 9, 7, 'oracle');
+INSERT INTO improvements (game_id, x, y, type, completion) VALUES
+(1, 1, 7, 'castle', 1),
+(1, 2, 7, 'tower', 1),
+(1, 3, 7, 'craftshop', 1),
+(1, 4, 7, 'fisher', 1),
+(1, 5, 7, 'market', 1),
+(1, 6, 7, 'church', 1),
+(1, 7, 7, 'temple', 1),
+(1, 8, 7, 'pyramid', 1),
+(1, 9, 7, 'oracle', 1);
 
-INSERT INTO units (player_id, x, y, action) VALUES
-(1, 5, 5, NULL), (1, 12, 19, NULL), (1, 24, 10, NULL), (1, 30, 20, NULL), (1, 33, 5, NULL);
+INSERT INTO units (player_id, x, y) VALUES
+(1, 5, 5),
+(1, 12, 19),
+(1, 24, 10),
+(1, 30, 20),
+(1, 33, 5);

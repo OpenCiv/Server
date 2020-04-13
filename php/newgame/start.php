@@ -1,23 +1,33 @@
 <?php
-require 'init.php';
+require '../init.php';
 get_user();
-if (!$params || !$params->name) {
+if (!$params || !$params->id) {
    send_result('Parameter missing', 400);
 }
 
-// Create a new game
-$db->execute('INSERT INTO games (x, y, name) VALUES (?, ?, ?)', 'iis', 32, 16, $params->name);
-$query = $db->first('SELECT LAST_INSERT_ID()');
-$gameId = (int)$query[0];
-$_SESSION['game_id'] = $gameId;
+$gameId = $params->id;
+$query = $db->execute('SELECT id, user_id FROM players WHERE game_id = ?', $gameId);
+if (count($query) < 2) {
+   send_result('Not enough players', 400);
+}
 
-// Add the user as player
-$db->execute('INSERT INTO players (user_id, game_id, name) VALUES (?, ?, (SELECT name from users where id = ?))', 'iii', $userId, $gameId, $userId);
-$query = $db->first('SELECT LAST_INSERT_ID()');
-$playerId = (int)$query[0];
-$_SESSION['player_id'] = $playerId;
+if (count($query) > 8) {
+   send_result('Too many players', 400);
+}
 
-// The map is from a template
+$players = [];
+$playerId = false;
+foreach ($query as $player) {
+   $players[] = (int)$player[0];
+   if ($player[1] == $userId) {
+      $playerId = (int)$player[0];
+   }
+}
+
+if ($playerId === false) {
+   send_result('You are not in this game', 400);
+}
+
 $map = [
    [0, 0, 'water'], [1, 0, 'grass'], [2, 0, 'grass'], [3, 0, 'grass'], [4, 0, 'grass'], [5, 0, 'grass'], [6, 0, 'grass'], [7, 0, 'water'], [8, 0, 'water'], [9, 0, 'water'], [10, 0, 'water'], [11, 0, 'water'], [12, 0, 'water'], [13, 0, 'water'], [14, 0, 'water'], [15, 0, 'water'], [16, 0, 'water'], [17, 0, 'water'], [18, 0, 'water'], [19, 0, 'water'], [20, 0, 'water'], [21, 0, 'water'], [22, 0, 'water'], [23, 0, 'water'], [24, 0, 'water'], [25, 0, 'water'], [26, 0, 'water'], [27, 0, 'water'], [28, 0, 'water'], [29, 0, 'water'], [30, 0, 'water'], [31, 0, 'water'], 
    [0, 1, 'water'], [1, 1, 'grass'], [2, 1, 'water'], [3, 1, 'grass'], [4, 1, 'grass'], [5, 1, 'water'], [6, 1, 'grass'], [7, 1, 'water'], [8, 1, 'water'], [9, 1, 'water'], [10, 1, 'water'], [11, 1, 'water'], [12, 1, 'water'], [13, 1, 'water'], [14, 1, 'water'], [15, 1, 'water'], [16, 1, 'water'], [17, 1, 'water'], [18, 1, 'water'], [19, 1, 'water'], [20, 1, 'water'], [21, 1, 'water'], [22, 1, 'water'], [23, 1, 'water'], [24, 1, 'water'], [25, 1, 'water'], [26, 1, 'water'], [27, 1, 'water'], [28, 1, 'water'], [29, 1, 'water'], [30, 1, 'water'], [31, 1, 'water'], 
@@ -36,14 +46,7 @@ $map = [
    [0, 14, 'water'], [1, 14, 'water'], [2, 14, 'grass'], [3, 14, 'grass'], [4, 14, 'grass'], [5, 14, 'grass'], [6, 14, 'water'], [7, 14, 'water'], [8, 14, 'water'], [9, 14, 'grass'], [10, 14, 'grass'], [11, 14, 'grass'], [12, 14, 'water'], [13, 14, 'grass'], [14, 14, 'grass'], [15, 14, 'water'], [16, 14, 'water'], [17, 14, 'water'], [18, 14, 'water'], [19, 14, 'grass'], [20, 14, 'grass'], [21, 14, 'grass'], [22, 14, 'water'], [23, 14, 'water'], [24, 14, 'water'], [25, 14, 'water'], [26, 14, 'grass'], [27, 14, 'grass'], [28, 14, 'grass'], [29, 14, 'grass'], [30, 14, 'water'], [31, 14, 'water'], 
    [0, 15, 'water'], [1, 15, 'water'], [2, 15, 'water'], [3, 15, 'water'], [4, 15, 'water'], [5, 15, 'water'], [6, 15, 'water'], [7, 15, 'water'], [8, 15, 'water'], [9, 15, 'water'], [10, 15, 'water'], [11, 15, 'water'], [12, 15, 'water'], [13, 15, 'water'], [14, 15, 'water'], [15, 15, 'water'], [16, 15, 'water'], [17, 15, 'water'], [18, 15, 'water'], [19, 15, 'water'], [20, 15, 'water'], [21, 15, 'water'], [22, 15, 'water'], [23, 15, 'water'], [24, 15, 'water'], [25, 15, 'water'], [26, 15, 'water'], [27, 15, 'water'], [28, 15, 'water'], [29, 15, 'water'], [30, 15, 'water'], [31, 15, 'water']
 ];
-/*
-$db->prepare_transaction("INSERT INTO terrain (game_id, x, y, type) VALUES ($gameId, ?, ?, ?)", 'iis');
-foreach ($map as $tile) {
-   $db->add_transaction($tile[0], $tile[1], $type[2]);
-}
 
-$db->commit_transaction();
-*/
 $db->begin_transaction();
 $statement = $db->prepare("INSERT INTO terrain (game_id, x, y, type) VALUES ($gameId, ?, ?, ?)");
 $statement->bind_param('iis', $x, $y, $type);
@@ -51,16 +54,36 @@ foreach ($map as $tile) {
    $x = $tile[0];
    $y = $tile[1];
    $type = $tile[2];
-   if (!$statement->execute()) {
-      $db->rollback();
-      send_result('Query failed: ' . $query, 500);
-   }
+   $statement->execute();
 }
 
 $statement->close();
 $db->commit();
 
-$db->execute("INSERT INTO units (player_id, x, y) VALUES ($playerId, 1, 0)");
+$start = [
+   ['x' => 1, 'y' => 0],
+   ['x' => 10, 'y' => 2],
+   ['x' => 17, 'y' => 2],
+   ['x' => 24, 'y' => 2],
+   ['x' => 2, 'y' => 8],
+   ['x' => 9, 'y' => 10],
+   ['x' => 18, 'y' => 9],
+   ['x' => 26, 'y' => 10]
+];
+$db->begin_transaction();
+$statement = $db->prepare("INSERT INTO units (player_id, x, y) VALUES (?, ?, ?)");
+$statement->bind_param('iii', $player, $x, $y);
+foreach ($players as $index => $player) {
+   $x = $start[$index]['x'];
+   $y = $start[$index]['y'];
+   $statement->execute();
+}
 
-send_result($gameId);
+$statement->close();
+$db->commit();
+
+$_SESSION['game_id'] = $gameId;
+$_SESSION['player_id'] = $playerId;
+
+send_result(true);
 ?>
