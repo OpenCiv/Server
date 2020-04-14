@@ -38,8 +38,15 @@ foreach ($query as $tile) {
    $result['map'][$y][$x]['y'] = $y;
    $result['map'][$y][$x]['type'] = $tile[2];
    $result['map'][$y][$x]['resources'] = [];
-   $result['map'][$y][$x]['improvements'] = [];
    $result['map'][$y][$x]['units'] = [];
+}
+
+// Getting the vegetation
+$query = $db->execute('SELECT x, y, type FROM vegetation WHERE game_id = ?', 'i', $gameId);
+foreach ($query as $tile) {
+   $x = (int)$tile[0];
+   $y = (int)$tile[1];
+   $result['map'][$y][$x]['vegetation'] = $tile[2];
 }
 
 // Getting the resources
@@ -47,15 +54,15 @@ $query = $db->execute('SELECT id, x, y, type, quantity FROM resources WHERE game
 foreach ($query as $tile) {
    $x = (int)$tile[1];
    $y = (int)$tile[2];
-   $result['map'][$y][$x]['resources'][] = ['id' => (int)$tile[0], 'x' => $x, 'y' => $y, 'type' => $tile[3], 'quantity' => (double)$tile[4]];
+   $result['map'][$y][$x]['resources'][] = ['id' => (int)$tile[0], 'type' => $tile[3], 'quantity' => (double)$tile[4]];
 }
 
 // Getting the improvements
 $query = $db->execute('SELECT x, y, type, completion FROM improvements WHERE game_id = ?', 'i', $gameId);
-foreach ($query as $improvement) {
-   $x = (int)$improvement[0];
-   $y = (int)$improvement[1];
-   $result['map'][$y][$x]['improvements'][] = ['type' => $improvement[2], 'x' => $x, 'y' => $y, 'completion' => (float)$improvement[3]];
+foreach ($query as $tile) {
+   $x = (int)$tile[0];
+   $y = (int)$tile[1];
+   $result['map'][$y][$x]['improvement'] = ['type' => $tile[2], 'completion' => (float)$tile[3]];
 }
 
 // Getting the units
