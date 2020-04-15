@@ -8,22 +8,29 @@ if (!$params || !isset($params->id) || !isset($params->order)) {
 
 $unitId = $params->id;
 
-// Get the unit ordered to build
+// Check if the unit exists
 $query = $db->first('SELECT player_id, x, y FROM units WHERE id = ?', 'i', $unitId);
 if (!$query) {
    send_result('Unit not found', 400);
 }
 
+// Check if the unit is owned by the player
 if ($query[0] != $playerId) {
    send_result('Not the player\'s unit', 403);
 }
 
-// If there are no other move actions, the starting point is the unit's current location
-$oldX = (int)$query[1];
-$oldY = (int)$query[2];
+// Delete the action
+$db->execute('DELETE FROM actions WHERE unit_id = ? AND ordering = ?', 'ii', $unitId, $params->order);
 
-$db->execute('DELETE FROM actions WHERE unit_id = ? AND ordering = ?', 'ii', $params->id, $params->order);
-$db->execute('UPDATE actions SET ordering = ordering - 1 WHERE ordering > ?', 'i', $params->order);
+// This should not be necessary, but it feels neat to keep the order from 1 up to the number of orders
+$orders = $db->execute('SELECT ordering FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
+for ($index = 0; $index < count($orders); $index++) {
+   if ($orders[$index] !== $index + 1) {
+      $db->execute('UPDATE actions SET ordering = ? WHERE unit_id = ? AND ordering = ?', 'iii', $index + 1, $unitId, $orders[$index]);
+   }
+}
+
+// Send the remaining actions
 $actions = get_actions();
 send_result($actions);
 ?>
