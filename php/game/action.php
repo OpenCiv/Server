@@ -8,12 +8,13 @@ if (!$params || !isset($params->id) || !isset($params->type) || !isset($params->
 
 $unitId = $params->id;
 
-// Get the unit ordered to build
+// Check if the unit exists
 $query = $db->first('SELECT player_id, x, y FROM units WHERE id = ?', 'i', $unitId);
 if (!$query) {
    send_result('Unit not found', 400);
 }
 
+// Check if the unit is owned by the player
 if ($query[0] != $playerId) {
    send_result('Not the player\'s unit', 403);
 }
@@ -22,6 +23,7 @@ if ($query[0] != $playerId) {
 $oldX = (int)$query[1];
 $oldY = (int)$query[2];
 
+// Get the last action to determine the order number
 $query = $db->first("SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering DESC", 'i', $unitId);
 if ($query !== null) {
 
@@ -35,7 +37,7 @@ if ($query !== null) {
    $newOrder = 1;
 }
 
-// This will set $oldX and $oldY to the destination of the last move action
+// This will also set $oldX and $oldY to the destination of the last move action
 $actions = get_actions();
 
 // A move needs be checked for feasibility
@@ -57,5 +59,6 @@ if ($params->type === 'move') {
 //...while only the destination is stored in the database
 $db->execute('INSERT INTO actions (unit_id, ordering, type, parameter) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
 
+// Send all actions
 send_result($actions);
 ?>

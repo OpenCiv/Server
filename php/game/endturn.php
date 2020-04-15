@@ -80,7 +80,12 @@ foreach ($units as $unitId => $unit) {
    }
 }
 
+// Reset player statusses
 $db->execute('UPDATE players SET finished = 0 WHERE game_id = ?', 'i', $gameId);
+
+// Increase the turn number
 $db->execute('UPDATE games SET turn = turn + 1 WHERE id = ?', 'i', $gameId);
+
+// Send success indicator
 send_result(true);
 ?>
