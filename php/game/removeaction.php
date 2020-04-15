@@ -24,9 +24,9 @@ $db->execute('DELETE FROM actions WHERE unit_id = ? AND ordering = ?', 'ii', $un
 
 // This should not be necessary, but it feels neat to keep the order from 1 up to the number of orders
 $orders = $db->execute('SELECT ordering FROM actions WHERE unit_id = ? ORDER BY ordering', 'i', $unitId);
-for ($index = 0; $index < count($orders); $index++) {
-   if ($orders[$index] !== $index + 1) {
-      $db->execute('UPDATE actions SET ordering = ? WHERE unit_id = ? AND ordering = ?', 'iii', $index + 1, $unitId, $orders[$index]);
+for ($index = 1; $index <= count($orders); $index++) {
+   if ($orders[$index] !== $index) {
+      $db->execute('UPDATE actions SET ordering = ? WHERE unit_id = ? AND ordering = ?', 'iii', $index, $unitId, $orders[$index]);
    }
 }
 
