@@ -10,11 +10,18 @@ if ($query[0]) {
    send_result(false);
 }
 
+get_map();
+
+// Get all player population surplusses
+$query = $db->execute('SELECT id, surplus FROM players WHERE game_id = ?', 'i', $gameId);
+foreach ($query as $player) {
+   $players[(int)$player[0]] = ['surplus' => (float)$player[1]];
+}
+
 // Get all units in the game
-$query = $db->execute('SELECT id, x, y FROM units WHERE player_id IN (SELECT id FROM players WHERE game_id = ?)', 'i', $gameId);
-$units = [];
+$query = $db->execute('SELECT id, player_id, x, y FROM units WHERE player_id IN (SELECT id FROM players WHERE game_id = ?)', 'i', $gameId);
 foreach ($query as $row) {
-   $units[(int)$row[0]] = ['x' => (int)$row[1], 'y' => (int)$row[2]];
+   $units[(int)$row[0]] = ['player_id' => (int)$row[1], 'x' => (int)$row[2], 'y' => (int)$row[3]];
 }
 
 // Resolve all unit actions
@@ -32,6 +39,9 @@ foreach ($units as $unitId => $unit) {
    // The result is false if the action could not be executed
    $result = false;
    switch ($type) {
+      case 'new':
+         $result = true;
+
       case 'move':
          $destination = explode(',', $parameter);
          $path = get_path($unit['x'], $unit['y'], (int)$destination[0], (int)$destination[1]);
@@ -56,7 +66,7 @@ foreach ($units as $unitId => $unit) {
             $completion = min(1, (float)$query[1] + 0.2);
             $db->execute('UPDATE improvements SET completion = ? WHERE game_id = ? AND x = ? AND y = ?', 'diii', $completion, $gameId, $unit['x'], $unit['y']);
             if ($completion === 1) {
-               $db->execute("DELETE action.* FROM actions action INNER JOIN units unit ON action.unit_id = unit.id WHERE action.ordering = 1 AND action.type = 'build' AND unit.x = ? AND unit.y = ?", 'iii', $unit['x'], $unit['y']);
+               $db->execute("DELETE action.* FROM actions action INNER JOIN units unit ON action.unit_id = unit.id WHERE action.ordering = 1 AND action.type = 'build' AND unit.x = ? AND unit.y = ?", 'ii', $unit['x'], $unit['y']);
                $result = true;
             } else {
                $result = null;
@@ -65,7 +75,13 @@ foreach ($units as $unitId => $unit) {
       break;
 
       case 'settle':
-         
+         switch($map[$unit['x']][$unit['y']]) {
+            case 'grass':
+               $players[$unit['player_id']]['surplus'] += 0.2;
+            break;
+         }
+
+         $result = null;
       break;
    }
 
@@ -80,8 +96,10 @@ foreach ($units as $unitId => $unit) {
    }
 }
 
-// Reset player statusses
-$db->execute('UPDATE players SET finished = 0 WHERE game_id = ?', 'i', $gameId);
+// Set player parameters
+foreach ($players as $playerId => $player) {
+   $db->execute('UPDATE players SET surplus = ?, finished = 0 WHERE id = ?', 'di', $player['surplus'], $playerId);
+}
 
 // Increase the turn number
 $db->execute('UPDATE games SET turn = turn + 1 WHERE id = ?', 'i', $gameId);

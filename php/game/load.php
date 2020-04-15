@@ -15,12 +15,13 @@ $result['game']['turn'] = (int)$query[3];
 
 // Getting player info
 $result['players'] = [];
-$query = $db->execute('SELECT id, user_id, name, color, icon FROM players WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, user_id, name, color, icon, surplus FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $player_result = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
-   $result['players'][] = $player_result;
+   $playerResult = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
+   $result['players'][] = $playerResult;
    if ($player[1] == $playerId) {
-      $result['player'] = $player_result;
+      $playerResult['surplus'] = (float)$player[5];
+      $result['player'] = $playerResult;
    }
 }
 
@@ -73,13 +74,17 @@ foreach ($unitQuery as $unit) {
    $x = (int)$unit[2];
    $y = (int)$unit[3];
 
+   // These need to be set, otherwise the location of the previous unit is assumed
+   $oldX = $x;
+   $oldY = $y;
+   $actions = get_actions();
+
    // Only the actions of the player's units are loaded
    if ($unitPlayerId === $playerId) {
-      $oldX = $x;
-      $oldY = $y;
-      $actions = get_actions();
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId, 'actions' => $actions];
-   } else {
+
+   // New units should not be displayed
+   } elseif (empty($actions) || $actions[0] !== 'new') {
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId];
    }
 }

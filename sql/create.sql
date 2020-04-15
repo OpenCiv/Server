@@ -30,6 +30,7 @@ CREATE TABLE players (
    game_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,
    finished BOOLEAN NOT NULL DEFAULT FALSE,
+   surplus FLOAT NOT NULL DEFAULT 0,
    CONSTRAINT fk_player_user FOREIGN KEY (user_id) REFERENCES users(id),
    CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
 );

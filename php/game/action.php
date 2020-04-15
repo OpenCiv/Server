@@ -27,8 +27,8 @@ $oldY = (int)$query[2];
 $query = $db->first("SELECT ordering, type, parameter FROM actions WHERE unit_id = ? ORDER BY ordering DESC", 'i', $unitId);
 if ($query !== null) {
 
-   // Check if the intended action differs from the last action
-   if ($query[1] === $params->type && $query[2] === $params->parameter) {
+   // Check if the intended action differs from the last action, or if the unit is just placed
+   if (($query[1] === $params->type && $query[2] === $params->parameter) || $query[1] === 'new') {
       send_result(false);
    }
 
