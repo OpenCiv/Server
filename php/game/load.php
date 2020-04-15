@@ -72,6 +72,8 @@ foreach ($unitQuery as $unit) {
    $unitPlayerId = (int)$unit[1];
    $x = (int)$unit[2];
    $y = (int)$unit[3];
+
+   // Only the actions of the player's units are loaded
    if ($unitPlayerId === $playerId) {
       $oldX = $x;
       $oldY = $y;
