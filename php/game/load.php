@@ -83,7 +83,7 @@ foreach ($unitQuery as $unit) {
    if ($unitPlayerId === $playerId) {
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId, 'actions' => $actions];
 
-   // New units should not be displayed
+   // New units of other players should not be displayed at all
    } elseif (empty($actions) || $actions[0] !== 'new') {
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId];
    }
