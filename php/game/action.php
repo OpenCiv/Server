@@ -2,7 +2,7 @@
 require '../init.php';
 get_player();
 
-if (!$params || !isset($params->id) || !isset($params->type) || !isset($params->parameter)) {
+if (!$params || !isset($params->id) || !isset($params->type)) {
    send_result('Parameter missing', 400);
 }
 
@@ -28,7 +28,7 @@ $query = $db->first("SELECT ordering, type, parameter FROM actions WHERE unit_id
 if ($query !== null) {
 
    // Check if the intended action differs from the last action, or if the unit is just placed
-   if (($query[1] === $params->type && $query[2] === $params->parameter) || $query[1] === 'new') {
+   if (($query[1] === $params->type && (!$params->parameter || $query[2] === $params->parameter)) || $query[1] === 'new') {
       send_result(false);
    }
 
@@ -42,7 +42,10 @@ $actions = get_actions();
 
 // A move needs be checked for feasibility
 if ($params->type === 'move') {
-
+   if (!isset($params->parameter)) {
+      send_result('Parameter missing', 400);
+   }
+   
    // Get the path to the intended destination
    $coordinates = explode(',', $params->parameter);
    $path = get_path($oldX, $oldY, (int)$coordinates[0], (int)$coordinates[1]);
@@ -57,7 +60,11 @@ if ($params->type === 'move') {
 }
 
 //...while only the destination is stored in the database
-$db->execute('INSERT INTO actions (unit_id, ordering, type, parameter) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
+if ($params->parameter) {
+   $db->execute('INSERT INTO actions (unit_id, ordering, type, parameter) VALUES (?, ?, ?, ?)', 'iiss', $unitId, $newOrder, $params->type, $params->parameter);
+} else {
+   $db->execute('INSERT INTO actions (unit_id, ordering, type) VALUES (?, ?, ?)', 'iis', $unitId, $newOrder, $params->type);
+}
 
 // Send all actions
 send_result($actions);
