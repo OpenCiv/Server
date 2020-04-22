@@ -104,3 +104,11 @@ CREATE TABLE equipment (
    CONSTRAINT fk_equipment_game FOREIGN KEY (game_id) REFERENCES games(id),
    CONSTRAINT fk_equipment_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );
+
+CREATE TABLE research (
+   player_id INT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   progress INT NOT NULL,
+   PRIMARY KEY(player_id, name),
+   CONSTRAINT fk_player_research FOREIGN KEY (player_id) REFERENCES players(id)
+);

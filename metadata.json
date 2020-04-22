@@ -1,0 +1,95 @@
+{
+   "technologies": [
+      {
+         "name": "alphabet",
+         "cost": 10,
+         "prerequisites": []
+      },
+      {
+         "name": "writing",
+         "cost": 20,
+         "prerequisites": [
+            {
+               "type": "technology",
+               "name": "alphabet"
+            }
+         ]
+      },
+      {
+         "name": "bronze_working",
+         "cost": 25,
+         "prerequisites": []
+      },
+      {
+         "name": "iron_working",
+         "cost": 40,
+         "prerequisites": [
+            {
+               "type": "technology",
+               "name": "bronze_working"
+            }
+         ]
+      }
+   ],
+   "improvements": [
+      {
+         "name": "farm",
+         "time": 2,
+         "prerequisites": []
+      },
+      {
+         "name": "library",
+         "time": 5,
+         "prerequisites": [
+            {
+               "type": "technology",
+               "name": "writing"
+            }
+         ]
+      },
+      {
+         "name": "gold_mine",
+         "time": 2,
+         "prerequisites": [
+            {
+               "type": "resource",
+               "name": "gold"
+            }
+         ]
+      },
+      {
+         "name": "bronze_mine",
+         "time": 2,
+         "prerequisites": [
+            {
+               "type": "resource",
+               "name": "bronze"
+            }
+         ]
+      },
+      {
+         "name": "iron_mine",
+         "time": 2,
+         "prerequisites": [
+            {
+               "type": "resource",
+               "name": "iron"
+            }
+         ]
+      }
+   ],
+   "resources": [
+      {
+         "name": "gold",
+         "prerequisite": []
+      },
+      {
+         "name": "bronze",
+         "prerequisite": ["bronze_working"]
+      },
+      {
+         "name": "iron",
+         "prerequisite": ["iron_working"]
+      }
+   ]
+}
