@@ -31,13 +31,14 @@ $result['map'] = [];
 /* Note that the y-coordinate comes before the x-coordinate for CSS reasons */
 
 // Getting the terrain
-$query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type, hill FROM terrain WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
    $x = (int)$tile[0];
    $y = (int)$tile[1];
    $result['map'][$y][$x]['x'] = $x;
    $result['map'][$y][$x]['y'] = $y;
    $result['map'][$y][$x]['type'] = $tile[2];
+   $result['map'][$y][$x]['hill'] = (bool)$tile[3];
    $result['map'][$y][$x]['resources'] = [];
    $result['map'][$y][$x]['units'] = [];
 }
