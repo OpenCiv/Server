@@ -40,6 +40,7 @@ CREATE TABLE terrain (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
+   hill TINYINT NOT NULL,
    PRIMARY KEY(game_id, x, y),
    CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
