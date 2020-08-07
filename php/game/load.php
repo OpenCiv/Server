@@ -25,6 +25,13 @@ foreach ($query as $player) {
    }
 }
 
+// Getting player research
+$result['techs'] = [];
+$query = $db->execute('SELECT name, progress, queue FROM techs WHERE player_id = ? ORDER BY queue', 'i', $playerId);
+foreach ($query as $tech) {
+   $result['techs'][] = ['name' => $tech[0], 'progress' => (int)$tech[1], 'queue' => (int)$tech[2]];
+}
+
 // Getting the map
 $result['map'] = [];
 

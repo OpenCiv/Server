@@ -74,6 +74,15 @@ CREATE TABLE improvements (
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
+CREATE TABLE techs (
+   player_id INT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   progress INT NOT NULL,
+   queue SMALLINT NULL,
+   PRIMARY KEY(player_id, name),
+   CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
+)
+
 CREATE TABLE units (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    player_id INT NOT NULL,
