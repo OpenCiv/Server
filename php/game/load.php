@@ -2,6 +2,14 @@
 require '../init.php';
 get_player();
 
+// Getting the metadata
+$metadata = file_get_contents('../../metadata.json');
+if (!$metadata) {
+   send_result('Metadata not found', 500);
+}
+
+$result['metadata'] = json_decode($metadata);
+
 // Getting game details
 $query = $db->first('SELECT name, x, y, turn FROM games WHERE id = ?', 'i', $gameId);
 if (!$query) {
