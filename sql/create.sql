@@ -30,6 +30,7 @@ CREATE TABLE players (
    game_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,
    finished BOOLEAN NOT NULL DEFAULT FALSE,
+   surplus FLOAT NOT NULL DEFAULT 0,
    CONSTRAINT fk_player_user FOREIGN KEY (user_id) REFERENCES users(id),
    CONSTRAINT fk_player_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -39,6 +40,7 @@ CREATE TABLE terrain (
    x SMALLINT NOT NULL,
    y SMALLINT NOT NULL,
    type VARCHAR(20) NOT NULL,
+   hill TINYINT NOT NULL,
    PRIMARY KEY(game_id, x, y),
    CONSTRAINT fk_terrain_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
@@ -72,6 +74,15 @@ CREATE TABLE improvements (
    CONSTRAINT fk_improvement_game FOREIGN KEY (game_id) REFERENCES games(id)
 );
 
+CREATE TABLE techs (
+   player_id INT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   progress INT NOT NULL,
+   queue SMALLINT NULL,
+   PRIMARY KEY(player_id, name),
+   CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
+)
+
 CREATE TABLE units (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
    player_id INT NOT NULL,
@@ -102,4 +113,12 @@ CREATE TABLE equipment (
    INDEX(game_id, x, y),
    CONSTRAINT fk_equipment_game FOREIGN KEY (game_id) REFERENCES games(id),
    CONSTRAINT fk_equipment_unit FOREIGN KEY (unit_id) REFERENCES units(id)
+);
+
+CREATE TABLE research (
+   player_id INT NOT NULL,
+   name VARCHAR(50) NOT NULL,
+   progress INT NOT NULL,
+   PRIMARY KEY(player_id, name),
+   CONSTRAINT fk_player_research FOREIGN KEY (player_id) REFERENCES players(id)
 );

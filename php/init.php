@@ -218,13 +218,11 @@ function get_path($oldX, $oldY, $newX, $newY) {
 
    // Check if the destination is not off the map
    if ($newX < 0 || $newX >= $gameX ||$newY < 0 || $newY >= $gameY) {
-      return 'off the map';
       return false;
    }
 
    // Check if the tile can be entered by the unit at all
    if (!in_array($copy[$newX][$newY], $passable)) {
-      return 'impassible';
       return false;
    }
 
@@ -267,7 +265,6 @@ function get_path($oldX, $oldY, $newX, $newY) {
 
    // If the destination tile is still a string, the destination has not been reached
    if (gettype($copy[$newX][$newY]) === 'string') {
-      return 'unreachable';
       return false;
    }
 
@@ -333,7 +330,7 @@ function get_actions() {
    foreach ($query as $action) {
       $order = (int)$action[0];
       $type = $action[1];
-      
+
       // Move actions have the whole path as parameter
       // This will also set the starting point for the possible subsequent move action
       if ($type === 'move') {
@@ -352,7 +349,7 @@ function get_actions() {
       } else {
          $parameter = $action[2];
       }
-   
+
       $actions[] = ['order' => $order, 'type' => $type, 'parameter' => $parameter];
    }
 

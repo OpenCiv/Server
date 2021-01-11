@@ -2,6 +2,14 @@
 require '../init.php';
 get_player();
 
+// Getting the metadata
+$metadata = file_get_contents('../../metadata.json');
+if (!$metadata) {
+   send_result('Metadata not found', 500);
+}
+
+$result['metadata'] = json_decode($metadata);
+
 // Getting game details
 $query = $db->first('SELECT name, x, y, turn FROM games WHERE id = ?', 'i', $gameId);
 if (!$query) {
@@ -15,13 +23,21 @@ $result['game']['turn'] = (int)$query[3];
 
 // Getting player info
 $result['players'] = [];
-$query = $db->execute('SELECT id, user_id, name, color, icon FROM players WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, user_id, name, color, icon, surplus FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $player_result = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
-   $result['players'][] = $player_result;
+   $playerResult = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
+   $result['players'][] = $playerResult;
    if ($player[1] == $playerId) {
-      $result['player'] = $player_result;
+      $playerResult['surplus'] = (float)$player[5];
+      $result['player'] = $playerResult;
    }
+}
+
+// Getting player research
+$result['techs'] = [];
+$query = $db->execute('SELECT name, progress, queue FROM techs WHERE player_id = ? ORDER BY queue', 'i', $playerId);
+foreach ($query as $tech) {
+   $result['techs'][] = ['name' => $tech[0], 'progress' => (int)$tech[1], 'queue' => (int)$tech[2]];
 }
 
 // Getting the map
@@ -30,13 +46,14 @@ $result['map'] = [];
 /* Note that the y-coordinate comes before the x-coordinate for CSS reasons */
 
 // Getting the terrain
-$query = $db->execute('SELECT x, y, type FROM terrain WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT x, y, type, hill FROM terrain WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $tile) {
    $x = (int)$tile[0];
    $y = (int)$tile[1];
    $result['map'][$y][$x]['x'] = $x;
    $result['map'][$y][$x]['y'] = $y;
    $result['map'][$y][$x]['type'] = $tile[2];
+   $result['map'][$y][$x]['hill'] = (bool)$tile[3];
    $result['map'][$y][$x]['resources'] = [];
    $result['map'][$y][$x]['units'] = [];
 }
@@ -73,13 +90,17 @@ foreach ($unitQuery as $unit) {
    $x = (int)$unit[2];
    $y = (int)$unit[3];
 
+   // These need to be set, otherwise the location of the previous unit is assumed
+   $oldX = $x;
+   $oldY = $y;
+   $actions = get_actions();
+
    // Only the actions of the player's units are loaded
    if ($unitPlayerId === $playerId) {
-      $oldX = $x;
-      $oldY = $y;
-      $actions = get_actions();
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId, 'actions' => $actions];
-   } else {
+
+   // New units of other players should not be displayed at all
+   } elseif (empty($actions) || $actions[0] !== 'new') {
       $result['map'][$y][$x]['units'][] = ['id' => $unitId, 'x' => $x, 'y' => $y, 'player_id' => $unitPlayerId];
    }
 }
