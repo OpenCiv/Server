@@ -115,6 +115,14 @@ CREATE TABLE equipment (
    CONSTRAINT fk_equipment_unit FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 
+CREATE TABLE stocks (
+   player_id INT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   quantity FLOAT NOT NULL,
+   PRIMARY KEY(player_id, type),
+   CONSTRAINT fk_stock_player FOREIGN KEY (player_id) REFERENCES players(id)
+);
+
 CREATE TABLE research (
    player_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,

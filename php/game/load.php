@@ -21,15 +21,21 @@ $result['game']['x'] = (int)$query[1];
 $result['game']['y'] = (int)$query[2];
 $result['game']['turn'] = (int)$query[3];
 
-// Getting player info
+// Getting players info
 $result['players'] = [];
-$query = $db->execute('SELECT id, user_id, name, color, icon, surplus FROM players WHERE game_id = ?', 'i', $gameId);
+$query = $db->execute('SELECT id, user_id, name, color, icon FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
    $playerResult = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
    $result['players'][] = $playerResult;
    if ($player[1] == $playerId) {
-      $playerResult['surplus'] = (float)$player[5];
       $result['player'] = $playerResult;
+
+      // Get what the player has in stock
+      $result['stocks'] = [];
+      $query = $db->execute('SELECT type, quantity FROM stocks WHERE player_id = ?', 'i', $playerId);
+      foreach ($query as $stock) {
+         $result['stocks'][$stock[0]] = (int)$stock[1];
+      }
    }
 }
 

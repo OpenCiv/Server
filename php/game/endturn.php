@@ -12,10 +12,16 @@ if ($query[0]) {
 
 get_map();
 
-// Get all player population surplusses
-$query = $db->execute('SELECT id, surplus FROM players WHERE game_id = ?', 'i', $gameId);
+// Get all players
+$query = $db->execute('SELECT id FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $players[(int)$player[0]] = ['surplus' => (float)$player[1]];
+   $players[(int)$player[0]] = [];
+}
+
+// Get all stocks
+$query = $db->execute('SELECT player_id, type, quantity FROM stocks WHERE player_id IN (SELECT id FROM players WHERE game_id = ?)', 'i', $gameId);
+foreach ($query as $stock) {
+   $players[(int)$stock[0]]['stocks'][$stock[1]] = (int)$stock[2];
 }
 
 // Get all units in the game
@@ -41,6 +47,7 @@ foreach ($units as $unitId => $unit) {
    switch ($type) {
       case 'new':
          $result = true;
+      break;
 
       case 'move':
          $destination = explode(',', $parameter);
@@ -57,6 +64,12 @@ foreach ($units as $unitId => $unit) {
          }
       break;
 
+      case 'earn':
+         $players[$unit['player_id']]['stocks']['credits']++;
+         $result = null;
+      break;
+
+      /*
       case 'build':
          $query = $db->first('SELECT type, completion FROM improvements WHERE game_id = ? AND x = ? AND y = ?', 'iii', $gameId, $unit['x'], $unit['y']);
          if (!$query) {
@@ -83,6 +96,7 @@ foreach ($units as $unitId => $unit) {
 
          $result = null;
       break;
+      */
    }
 
    // If the action was completed, it will be removed and the other actions move up a step
@@ -98,7 +112,17 @@ foreach ($units as $unitId => $unit) {
 
 // Set player parameters
 foreach ($players as $playerId => $player) {
-   $db->execute('UPDATE players SET surplus = ?, finished = 0 WHERE id = ?', 'di', $player['surplus'], $playerId);
+   $db->execute('UPDATE players SET finished = 0 WHERE id = ?', 'i', $playerId);
+
+   // Set stocks
+   foreach ($player['stocks'] as $type => $quantity) {
+      $query = $db->first('SELECT EXISTS (SELECT * FROM stocks WHERE player_id = ? AND type = ?)', 'is', $playerId, $type);
+      if ($query) {
+         $db->execute('UPDATE stocks SET quantity = ? WHERE player_id = ? AND type = ?', 'dsi', $quantity, $playerId, $type);
+      } else {
+         $db->execute('INSERT INTO stocks (player_id, type, quantity) VALUES (?, ?, ?)', 'isd', $playerId, $type, $quantity);
+      }
+   }
 }
 
 // Increase the turn number
