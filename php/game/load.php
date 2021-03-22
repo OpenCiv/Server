@@ -2,12 +2,6 @@
 require '../init.php';
 get_player();
 
-// Getting the metadata
-$metadata = file_get_contents('../../metadata.json');
-if (!$metadata) {
-   send_result('Metadata not found', 500);
-}
-
 $result['metadata'] = json_decode($metadata);
 
 // Getting game details

@@ -145,6 +145,7 @@ function get_player() {
    global $userId;
    global $gameId;
    global $playerId;
+   global $metadata;
 
    get_user();
 
@@ -182,6 +183,14 @@ function get_player() {
    // Set global variables
    $gameId = $_SESSION['game_id'];
    $playerId = $_SESSION['player_id'];
+
+   // Getting the metadata
+   $metadata = file_get_contents('../metadata.json');
+   if (!$metadata) {
+      send_result('Metadata not found', 500);
+   }
+
+   $metadata = json_decode($metadata);
 }
 
 /**

@@ -15,7 +15,7 @@ get_map();
 // Get all players
 $query = $db->execute('SELECT id FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $players[(int)$player[0]] = [];
+   $players[(int)$player[0]] = ['techs' => [], 'techPoints' => 0];
 }
 
 // Get all stocks
@@ -26,8 +26,21 @@ foreach ($query as $stock) {
 
 // Get all units in the game
 $query = $db->execute('SELECT id, player_id, x, y FROM units WHERE player_id IN (SELECT id FROM players WHERE game_id = ?)', 'i', $gameId);
-foreach ($query as $row) {
-   $units[(int)$row[0]] = ['player_id' => (int)$row[1], 'x' => (int)$row[2], 'y' => (int)$row[3]];
+foreach ($query as $unit) {
+   $units[(int)$unit[0]] = ['player_id' => (int)$unit[1], 'x' => (int)$unit[2], 'y' => (int)$unit[3]];
+}
+
+// Get technogical progress
+$query = $db->execute('SELECT playerId, name, progress, queue FROM techs');
+foreach ($query as $tech) {
+   if ($tech[2] !== null) {
+      $players[(int)$tech[0]]['techs'][(int)$tech[2]] = ['name' => $tech[0], 'progress' => (int)$tech[1]];
+   }
+}
+
+// Sort the techs in order of the queue, which is the key
+foreach ($players as $player) {
+   ksort($player['techs']);
 }
 
 // Resolve all unit actions
@@ -67,6 +80,12 @@ foreach ($units as $unitId => $unit) {
       case 'earn':
          $players[$unit['player_id']]['stocks']['credits']++;
          $result = null;
+      break;
+
+      case 'research':
+
+         // This may become larger when one unit can give more than one research point
+         $players[$unit['player_id']]['techPoints'] += 1;
       break;
 
       /*
@@ -122,6 +141,29 @@ foreach ($players as $playerId => $player) {
       } else {
          $db->execute('INSERT INTO stocks (player_id, type, quantity) VALUES (?, ?, ?)', 'isd', $playerId, $type, $quantity);
       }
+   }
+
+   // Technological advancement
+   while ($player['techPoints'] > 0) {
+      if (count($player['techs']) === 0) {
+         // ToDo: Send a message that research investment went to waste
+         break;
+      }
+
+      $tech = $player['techs'][array_key_first($player['techs'])];
+      $metaTech = $metadata['techs'][array_search($tech['name'], array_column($metadata['techs'], 'id'))];
+      $leftover = $metaTech['cost'] - $tech['progress'];
+      if ($leftover < $player['techPoints']) {
+         $tech['progress'] = $metaTech['cost'];
+         $player['techPoints'] -= $leftover;
+         array_shift($player['techs']);
+         // ToDo: Send a message that a technology is researched
+      } else {
+         $tech['progress'] += $player['techPoints'];
+         $player['techPoints'] = 0;
+      }
+
+      $db->execute('UPDATE techs SET progress = ? WHERE playerId = ? AND name = ?', 'iis', $tech['progress'], $playerId, $tech['name']);
    }
 }
 

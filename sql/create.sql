@@ -123,10 +123,11 @@ CREATE TABLE stocks (
    CONSTRAINT fk_stock_player FOREIGN KEY (player_id) REFERENCES players(id)
 );
 
-CREATE TABLE research (
+CREATE TABLE techs (
    player_id INT NOT NULL,
    name VARCHAR(50) NOT NULL,
    progress INT NOT NULL,
+   queue SMALLINT NULL,
    PRIMARY KEY(player_id, name),
-   CONSTRAINT fk_player_research FOREIGN KEY (player_id) REFERENCES players(id)
+   CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
 );
