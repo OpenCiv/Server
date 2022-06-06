@@ -15,7 +15,7 @@ get_map();
 // Get all players
 $query = $db->execute('SELECT id FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $players[(int)$player[0]] = ['techs' => [], 'techPoints' => 0];
+   $players[(int)$player[0]] = ['techs' => [], 'researching' => []];
 }
 
 // Get all stocks
@@ -33,8 +33,10 @@ foreach ($query as $unit) {
 // Get technogical progress
 $query = $db->execute('SELECT playerId, name, progress, queue FROM techs');
 foreach ($query as $tech) {
-   if ($tech[2] !== null) {
-      $players[(int)$tech[0]]['techs'][(int)$tech[2]] = ['name' => $tech[0], 'progress' => (int)$tech[1]];
+   if ($tech[3] !== null) {
+      $players[(int)$tech[0]]['researching'][(int)$tech[3]] = ['name' => $tech[1], 'progress' => (int)$tech[2]];
+   } else {
+      $players[(int)$tech[0]]['techs'][] = $tech[1];
    }
 }
 
@@ -84,8 +86,19 @@ foreach ($units as $unitId => $unit) {
 
       case 'research':
 
-         // This may become larger when one unit can give more than one research point
-         $players[$unit['player_id']]['techPoints'] += 1;
+         // The increment will become larger once we worked out how one unit can give more than one research point
+         $increment = 1;
+         while ($increment > 0 && $players[$unit['player_id']]['researching']) {
+            $tech = &$players[$unit['player_id']]['researching'][0];
+            $metaTech = $metadata[array_search($tech['name'], array_column($metadata['techs'], 'name'))];
+            $tech['progress'] += $increment;
+            if ($tech['progress'] >= $metaTech['cost']) {
+               $increment = $tech['progress'] - $metaTech['cost'];
+               $tech['progress'] = $metaTech['cost'];
+               array_shift($players[$unit['player_id']]['researching']);
+               $players[$unit['player_id']][] = $tech['name'];
+            }
+         }
       break;
 
       /*

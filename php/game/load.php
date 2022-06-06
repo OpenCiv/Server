@@ -2,7 +2,7 @@
 require '../init.php';
 get_player();
 
-$result['metadata'] = json_decode($metadata);
+$result['metadata'] = $metadata;
 
 // Getting game details
 $query = $db->first('SELECT name, x, y, turn FROM games WHERE id = ?', 'i', $gameId);
@@ -38,6 +38,18 @@ $result['techs'] = [];
 $query = $db->execute('SELECT name, progress, queue FROM techs WHERE player_id = ? ORDER BY queue', 'i', $playerId);
 foreach ($query as $tech) {
    $result['techs'][] = ['name' => $tech[0], 'progress' => (int)$tech[1], 'queue' => (int)$tech[2]];
+}
+
+// Getting notifications
+$result['log'] = [];
+$query = $db->execute('SELECT turn, type, x, y, icon, message FROM logs WHERE player_id = ?', 'i', $playerId);
+foreach ($query as $log) {
+   if (!key_exists((int)$log[0], $results['log'])) {
+      $results['log'][(int)$log[0]] = [];
+   }
+   $x = $log[2] === null || $log[3] === null ? null : (int)$log[2];
+   $y = $x === null ? null : (int)$log[3];
+   $results['log'][(int)$log[0]][] = ['type' => $log[1], 'x' => $x, 'y' => $y, 'icon' => $log[4], 'message' => $log[5]];
 }
 
 // Getting the map

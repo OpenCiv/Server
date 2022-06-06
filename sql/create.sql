@@ -122,3 +122,14 @@ CREATE TABLE techs (
    PRIMARY KEY(player_id, name),
    CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
 );
+
+CREATE TABLE logs (
+   player_id INT NOT NULL,
+   turn SMALLINT NOT NULL,
+   type VARCHAR(20) NOT NULL,
+   x SMALLINT NULL,
+   y SMALLINT NULL,
+   icon VARCHAR(200) NULL,
+   message TEXT NOT NULL,
+   CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
+);

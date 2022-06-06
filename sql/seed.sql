@@ -30,7 +30,12 @@ INSERT INTO terrain (game_id, x, y, type, hill) VALUES
 (1, 0, 24, 'water', 0), (1, 1, 24, 'water', 0), (1, 2, 24, 'water', 0), (1, 3, 24, 'water', 0), (1, 4, 24, 'water', 0), (1, 5, 24, 'water', 0), (1, 6, 24, 'water', 0), (1, 7, 24, 'water', 0), (1, 8, 24, 'water', 0), (1, 9, 24, 'water', 0), (1, 10, 24, 'water', 0), (1, 11, 24, 'water', 0), (1, 12, 24, 'water', 0), (1, 13, 24, 'grass', 0), (1, 14, 24, 'grass', 0), (1, 15, 24, 'grass', 0), (1, 16, 24, 'water', 0), (1, 17, 24, 'water', 0), (1, 18, 24, 'water', 0), (1, 19, 24, 'water', 0), (1, 20, 24, 'water', 0), (1, 21, 24, 'water', 0), (1, 22, 24, 'water', 0), (1, 23, 24, 'water', 0), (1, 24, 24, 'water', 0), (1, 25, 24, 'water', 0), (1, 26, 24, 'water', 0), (1, 27, 24, 'water', 0), (1, 28, 24, 'water', 0), (1, 29, 24, 'water', 0), (1, 30, 24, 'water', 0), (1, 31, 24, 'water', 0), (1, 32, 24, 'water', 0), (1, 33, 24, 'water', 0), (1, 34, 24, 'water', 0), (1, 35, 24, 'water', 0), (1, 36, 24, 'water', 0), (1, 37, 24, 'water', 0), (1, 38, 24, 'water', 0), (1, 39, 24, 'water', 0);
 
 INSERT INTO vegetation (game_id, x, y, type) VALUES
-(1, 4, 7, 'forest'),
+(1, 2, 6, 'pineforest'),
+(1, 3, 6, 'pineforest'),
+(1, 4, 6, 'pineforest'),
+(1, 5, 6, 'pineforest'),
+(1, 5, 5, 'pineforest'),
+(1, 4, 7, 'pineforest'),
 (1, 5, 7, 'forest'),
 (1, 4, 8, 'forest'),
 (1, 5, 8, 'forest'),
@@ -64,3 +69,16 @@ INSERT INTO units (player_id, x, y) VALUES
 (1, 24, 10),
 (1, 30, 20),
 (1, 33, 5);
+
+INSERT INTO notifications (player_id, turn, type, x, y, icon, message) VALUES
+(1, 50, 'research', NULL, NULL, 'resources/science.svg', 'Your civilization discovered Bronze Working! Research has now been focused on Siege Warfare.'),
+(1, 50, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 50, 'construction', 14, 24, 'menuicons/temple.svg', 'A temple has been completed.'),
+(1, 50, 'unit', 12, 22, 'menuicons/playerflag.svg', 'A unit has arrived at its destination and is awaiting orders.'),
+(1, 50, 'map', 12, 23, 'vegetation/forest.svg', 'A forest has grown.'),
+(1, 50, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 70, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 70, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 70, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 100, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
+(1, 100, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.');
