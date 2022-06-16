@@ -131,5 +131,5 @@ CREATE TABLE logs (
    y SMALLINT NULL,
    icon VARCHAR(200) NULL,
    message TEXT NOT NULL,
-   CONSTRAINT fk_tech_player FOREIGN KEY (player_id) REFERENCES players(id)
+   CONSTRAINT fk_log_player FOREIGN KEY (player_id) REFERENCES players(id)
 );

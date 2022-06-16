@@ -16,7 +16,6 @@ $result['game']['y'] = (int)$query[2];
 $result['game']['turn'] = (int)$query[3];
 
 // Getting players info
-$result['players'] = [];
 $query = $db->execute('SELECT id, user_id, name, color, icon FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
    $playerResult = ['id' => (int)$player[0], 'name' => $player[2], 'color' => $player[3], 'icon' => $player[4]];
@@ -25,36 +24,28 @@ foreach ($query as $player) {
       $result['player'] = $playerResult;
 
       // Get what the player has in stock
-      $result['stocks'] = [];
       $query = $db->execute('SELECT type, quantity FROM stocks WHERE player_id = ?', 'i', $playerId);
       foreach ($query as $stock) {
-         $result['stocks'][$stock[0]] = (int)$stock[1];
+         $result['inventory'][$stock[0]] = (int)$stock[1];
       }
    }
 }
 
 // Getting player research
-$result['techs'] = [];
 $query = $db->execute('SELECT name, progress, queue FROM techs WHERE player_id = ? ORDER BY queue', 'i', $playerId);
 foreach ($query as $tech) {
    $result['techs'][] = ['name' => $tech[0], 'progress' => (int)$tech[1], 'queue' => (int)$tech[2]];
 }
 
 // Getting notifications
-$result['log'] = [];
 $query = $db->execute('SELECT turn, type, x, y, icon, message FROM logs WHERE player_id = ?', 'i', $playerId);
 foreach ($query as $log) {
-   if (!key_exists((int)$log[0], $results['log'])) {
-      $results['log'][(int)$log[0]] = [];
-   }
-
    $x = $log[2] === null || $log[3] === null ? null : (int)$log[2];
    $y = $x === null ? null : (int)$log[3];
-   $results['log'][(int)$log[0]][] = ['type' => $log[1], 'x' => $x, 'y' => $y, 'icon' => $log[4], 'message' => $log[5]];
+   $result['log'][(int)$log[0]][] = ['type' => $log[1], 'x' => $x, 'y' => $y, 'icon' => $log[4], 'message' => $log[5]];
 }
 
 // Getting the map
-$result['map'] = [];
 
 /* Note that the y-coordinate comes before the x-coordinate for CSS reasons */
 
