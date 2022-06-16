@@ -38,11 +38,18 @@ foreach ($query as $tech) {
 }
 
 // Getting notifications
-$query = $db->execute('SELECT turn, type, x, y, icon, message FROM logs WHERE player_id = ?', 'i', $playerId);
-foreach ($query as $log) {
-   $x = $log[2] === null || $log[3] === null ? null : (int)$log[2];
-   $y = $x === null ? null : (int)$log[3];
-   $result['log'][(int)$log[0]][] = ['type' => $log[1], 'x' => $x, 'y' => $y, 'icon' => $log[4], 'message' => $log[5]];
+$logQuery = $db->execute('SELECT DISTINCT turn FROM logs WHERE player_id = ?', 'i', $playerId);
+foreach ($logQuery as $logTurn) {
+   $turn = (int)$logTurn[0];
+   $logEntry = ['turn' => $turn];
+   $query = $db->execute('SELECT type, x, y, icon, message FROM logs WHERE player_id = ? AND turn = ?', 'ii', $playerId, $turn);
+   foreach ($query as $entry) {
+      $x = $entry[1] === null || $entry[2] === null ? null : (int)$entry[1];
+      $y = $x === null ? null : (int)$entry[2];
+      $logEntry['entries'][] = ['type' => $entry[0], 'x' => $x, 'y' => $y, 'icon' => $entry[3], 'message' => $entry[4]];
+   }
+
+   $result['log'][] = $logEntry;
 }
 
 // Getting the map

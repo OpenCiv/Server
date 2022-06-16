@@ -10,12 +10,15 @@ if ($query[0]) {
    send_result(false);
 }
 
+$query = $db->first('SELECT turn FROM games WHERE id = ?', 'i', $gameId);
+$turn = (int)$query[0];
+
 get_map();
 
 // Get all players
 $query = $db->execute('SELECT id FROM players WHERE game_id = ?', 'i', $gameId);
 foreach ($query as $player) {
-   $players[(int)$player[0]] = ['techs' => [], 'researching' => []];
+   $players[(int)$player[0]] = ['techs' => [], 'techPoints' => 0];
 }
 
 // Get all stocks
@@ -31,13 +34,9 @@ foreach ($query as $unit) {
 }
 
 // Get technogical progress
-$query = $db->execute('SELECT playerId, name, progress, queue FROM techs');
+$query = $db->execute('SELECT player_id, name, progress, queue FROM techs');
 foreach ($query as $tech) {
-   if ($tech[3] !== null) {
-      $players[(int)$tech[0]]['researching'][(int)$tech[3]] = ['name' => $tech[1], 'progress' => (int)$tech[2]];
-   } else {
-      $players[(int)$tech[0]]['techs'][] = $tech[1];
-   }
+   $players[(int)$tech[0]]['techs'][(int)$tech[3]] = ['name' => $tech[1], 'progress' => (int)$tech[2]];
 }
 
 // Sort the techs in order of the queue, which is the key
@@ -87,18 +86,7 @@ foreach ($units as $unitId => $unit) {
       case 'research':
 
          // The increment will become larger once we worked out how one unit can give more than one research point
-         $increment = 1;
-         while ($increment > 0 && $players[$unit['player_id']]['researching']) {
-            $tech = &$players[$unit['player_id']]['researching'][0];
-            $metaTech = $metadata[array_search($tech['name'], array_column($metadata['techs'], 'name'))];
-            $tech['progress'] += $increment;
-            if ($tech['progress'] >= $metaTech['cost']) {
-               $increment = $tech['progress'] - $metaTech['cost'];
-               $tech['progress'] = $metaTech['cost'];
-               array_shift($players[$unit['player_id']]['researching']);
-               $players[$unit['player_id']][] = $tech['name'];
-            }
-         }
+         $players[$unit['player_id']]['techPoints'] += 1;
       break;
 
       /*
@@ -159,18 +147,23 @@ foreach ($players as $playerId => $player) {
    // Technological advancement
    while ($player['techPoints'] > 0) {
       if (count($player['techs']) === 0) {
-         // ToDo: Send a message that research investment went to waste
+         $db->execute('INSERT INTO logs (player_id, turn, type, icon, message) VALUES (?, ?, ?, ?, ?)', 'iisss', $playerId, $turn, 'research', 'resources/science.svg', 'You\'re wasting science points! Choose what to research next.');
          break;
       }
 
       $tech = $player['techs'][array_key_first($player['techs'])];
-      $metaTech = $metadata['techs'][array_search($tech['name'], array_column($metadata['techs'], 'id'))];
+      $metaTech = $metadata['advancements'][array_search($tech['name'], array_column($metadata['advancements'], 'id'))];
       $leftover = $metaTech['cost'] - $tech['progress'];
       if ($leftover < $player['techPoints']) {
          $tech['progress'] = $metaTech['cost'];
          $player['techPoints'] -= $leftover;
          array_shift($player['techs']);
-         // ToDo: Send a message that a technology is researched
+         $message = 'You discovered ' . $tech['name'] . '!';
+         if ($player['techs']) {
+            $message .= ' Research is now focused on ' . $player['techs'][0]['name'] . '.';
+         }
+
+         $db->execute('INSERT INTO logs (player_id, turn, type, icon, message) VALUES (?, ?, ?, ?, ?)', 'iisss', $playerId, $turn, 'research', $message);
       } else {
          $tech['progress'] += $player['techPoints'];
          $player['techPoints'] = 0;
