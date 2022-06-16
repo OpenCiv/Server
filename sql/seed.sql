@@ -70,7 +70,7 @@ INSERT INTO units (player_id, x, y) VALUES
 (1, 30, 20),
 (1, 33, 5);
 
-INSERT INTO notifications (player_id, turn, type, x, y, icon, message) VALUES
+INSERT INTO logs (player_id, turn, type, x, y, icon, message) VALUES
 (1, 50, 'research', NULL, NULL, 'resources/science.svg', 'Your civilization discovered Bronze Working! Research has now been focused on Siege Warfare.'),
 (1, 50, 'general', NULL, NULL, 'menuicons/error.svg', 'Something happened.'),
 (1, 50, 'construction', 14, 24, 'menuicons/temple.svg', 'A temple has been completed.'),

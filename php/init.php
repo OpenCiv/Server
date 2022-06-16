@@ -171,7 +171,7 @@ function get_player() {
    }
 
    // Retrieve the player ID
-   if (!$_SESSION['player_id']) {
+   if (!isset($_SESSION['player_id'])) {
       $query = $db->first('SELECT id FROM players WHERE game_id = ? AND user_id = ?', 'ii', $_SESSION['game_id'], $userId);
       if (!$query) {
          send_result('Not a player in this game', 403);
@@ -185,7 +185,7 @@ function get_player() {
    $playerId = $_SESSION['player_id'];
 
    // Getting the metadata
-   $metadata = file_get_contents('../metadata.json');
+   $metadata = file_get_contents('https://openciv.eu/metadata.json');
    if (!$metadata) {
       send_result('Metadata not found', 500);
    }

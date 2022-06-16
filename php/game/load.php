@@ -47,6 +47,7 @@ foreach ($query as $log) {
    if (!key_exists((int)$log[0], $results['log'])) {
       $results['log'][(int)$log[0]] = [];
    }
+
    $x = $log[2] === null || $log[3] === null ? null : (int)$log[2];
    $y = $x === null ? null : (int)$log[3];
    $results['log'][(int)$log[0]][] = ['type' => $log[1], 'x' => $x, 'y' => $y, 'icon' => $log[4], 'message' => $log[5]];
